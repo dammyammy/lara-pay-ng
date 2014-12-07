@@ -1,0 +1,21 @@
+{
+    "name": "dammyammy/lara-pay-ng",
+    "description": "",
+    "authors": [
+        {
+            "name": "Ogunmoye Damilola",
+            "email": "dami@ogunmoye.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "4.2.*",
+        "guzzlehttp/guzzle": "~4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Dammyammy\\LaraPayNG": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
