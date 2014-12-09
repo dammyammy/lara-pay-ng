@@ -11,7 +11,7 @@ return array(
         | We Currently Support The following  GTPay, VoguePay & WebPay
         */
 
-        'driver' => 'gtpay',
+        'driver' => 'voguepay',
 
         /*
         |--------------------------------------------------------------------------
@@ -66,9 +66,10 @@ return array(
         */
 
         'voguepay'     => array(
-            'currency'       => getenv('CURRENCY'),
-            'hashkey'          => getenv('WEBPAY_HASH_KEY'),
-            'site_redirect_url'   => route('pay'),
+            'currency'          => getenv('CURRENCY'),
+            'hashkey'           => getenv('WEBPAY_HASH_KEY'),
+            'site_redirect_url' => route('pay'),
+            'submitButton'      => 'https://voguepay.com/images/buttons/buynow_red.png',
             'gatewayUrl'        => 'https://voguepay.com/pay/'
         ),
     ),

@@ -6,15 +6,26 @@ namespace Dammyammy\LaraPayNG\Support;
 
 
 use Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Config\Repository;
 
 class Helpers {
 
+    /**
+     * @var Repository
+     */
+    private $config;
 
-    public function __construct()
+    /**
+     * @param Repository $config
+     */
+    public function __construct(Repository $config)
     {
+        $this->config = $config;
+    }
 
-        $this->config = new Config();
+    public function createPayButton($transactionData, $class = '')
+    {
+        return $this->generateSubmitButton($transactionData);
     }
 
     /**
@@ -33,16 +44,20 @@ class Helpers {
      * Adapter use this method to building a hidden form.
      *
      * @param array $attrs
-     * @param string $formid
      * @param string $class
      *
      * @throws UnknownPaymentGatewayException
+     * @internal param string $formid
      * @internal param string $method
      * @return string HTML
      */
-    protected function generateSubmitButton($attrs = [], $formid = 'form-gateway', $class = '')
+    protected  function generateSubmitButton($attrs = [], $class = '')
     {
-        $gatewayUrl = $this->determineGatewayUrl();
+
+        $driver = $this->config->get('lara-pay-ng::gateways.driver');
+        $formId =  'payvia' . $driver;
+
+        $gatewayUrl = $this->determineGatewayUrl($driver);
 
         $hiddens = [];
         $addition = [];
@@ -50,12 +65,16 @@ class Helpers {
         {
             $hiddens[] = '<input type="hidden" name="'.$key.'" value="'.$val.'" />' . "\n";
         }
-        if ($this->_includeSubmitBtn)
+        if ($driver == 'voguepay')
+        {
+            $addition[] = '<p><input type="image"  src="' . $this->config->get('lara-pay-ng::gateways.voguepay.submitButton') . '" alt="Submit"></p>';
+        }
+        else
         {
             $addition[] = '<p><input type="submit"  class="' . $class . '" value="Pay Now"></p>';
         }
         $form = '
-            <form method="POST" action="'.$gatewayUrl.'" id="'. $formid .'">
+            <form method="POST" action="'.$gatewayUrl.'" id="'. $formId .'">
                 '.implode('', $hiddens).'
                 '.implode('', $addition).'
             </form>
@@ -150,25 +169,26 @@ class Helpers {
     }
 
     /**
-     * @return string
+     * @param $driver
+     *
      * @throws UnknownPaymentGatewayException
+     * @return string
      */
-    protected function determineGatewayUrl()
+    protected function determineGatewayUrl($driver)
     {
-        $driver = $this->config->get('lara-pay-ng::gateways.driver');
 
         switch ( $driver )
         {
             case 'gtpay':
-                $gatewayUrl = 'https://ibank.gtbank.com/GTPay/Tranx.aspx';
+                $gatewayUrl = $this->config->get('lara-pay-ng::gateways.gtpay.gatewayUrl');
                 break;
 
             case 'webpay':
-                $gatewayUrl = 'https://stageserv.interswitchng.com/test_paydirect/pay';
+                $gatewayUrl = $this->config->get('lara-pay-ng::gateways.webpay.gatewayUrl');
                 break;
 
             case 'voguepay':
-                $gatewayUrl = '';
+                $gatewayUrl = $this->config->get('lara-pay-ng::gateways.voguepay.gatewayUrl');
                 break;
 
             case 'default':

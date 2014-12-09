@@ -3,7 +3,14 @@
 
 namespace Dammyammy\LaraPayNG;
 
+use Illuminate\Support\Traits\MacroableTrait;
+
 class GatewayRepository {
+
+
+    use MacroableTrait {
+        __call as macroCall;
+    }
 
     /**
      * The provider implementation.
@@ -20,8 +27,24 @@ class GatewayRepository {
     {
         $this->provider = $provider;
     }
+
+//    /**
+//     * Handle dynamic calls into macros or pass missing methods to the provider.
+//     *
+//     * @param  string  $method
+//     * @param  array   $parameters
+//     * @return mixed
+//     */
+//    public function __call($method, $parameters)
+//    {
+//
+//        return call_user_func_array([$this->provider, $method], $parameters);
+//
+//    }
+
+
     /**
-     * Handle dynamic calls into macros or pass missing methods to the provider.
+     * Handle dynamic calls into macros or pass missing methods to the store.
      *
      * @param  string  $method
      * @param  array   $parameters
@@ -29,8 +52,15 @@ class GatewayRepository {
      */
     public function __call($method, $parameters)
     {
-
-        return call_user_func_array([$this->provider, $method], $parameters);
-
+        if (static::hasMacro($method))
+        {
+            return $this->macroCall($method, $parameters);
+        }
+        else
+        {
+            return call_user_func_array(array($this->provider, $method), $parameters);
+        }
     }
+
+
 }

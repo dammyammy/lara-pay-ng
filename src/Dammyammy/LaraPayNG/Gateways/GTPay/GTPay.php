@@ -6,23 +6,14 @@ namespace Dammyammy\LaraPayNG\Gateways\GTPay;
 use Dammyammy\LaraPayNG\PaymentGateway;
 use Dammyammy\LaraPayNG\Support\Helpers;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Config;
 
-class GTPay implements PaymentGateway {
+class GTPay extends Helpers implements PaymentGateway {
 
-
-    public function __construct()
-    {
-
-        $this->helper = new Helpers();
-        $this->config = new Config();
-    }
 
     /**
      * Define Gateway name
      */
     const GATEWAY = 'GTPay';
-
 
 
     public function processTransaction($transactionData)
@@ -31,10 +22,10 @@ class GTPay implements PaymentGateway {
 
         $response = $client->get('/GTPayService/gettransactionstatus.json', [
             'query'     =>  [
-                'mertid'  => $this->config->get('services.payment.gtpay.mert_id'),
+                'mertid'  => $this->app['config']['lara-pay-ng::gateways.gtpay.mert_id'],
                 'amount'  => $transactionData['amount'],
                 'tranxid' => $transactionData['id'],
-                'hash'    => $this->helper->generateVerificationHash($transactionData['id'])
+                'hash'    => $this->generateVerificationHash($transactionData['id'])
 
             ],
             'headers'   =>  ['Accept' => 'application/json' ]
@@ -91,4 +82,5 @@ class GTPay implements PaymentGateway {
     {
         // TODO: Implement generateInvoice() method.
     }
+
 }

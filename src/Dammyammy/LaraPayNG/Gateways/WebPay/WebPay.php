@@ -5,17 +5,8 @@ namespace Dammyammy\LaraPayNG\Gateways\WebPay;
 use Dammyammy\LaraPayNG\PaymentGateway;
 use Dammyammy\LaraPayNG\Support\Helpers;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Config;
 
-class WebPay implements PaymentGateway {
-
-    public function __construct()
-    {
-
-        $this->helper = new Helpers();
-        $this->config = new Config();
-    }
-
+class WebPay extends Helpers implements PaymentGateway {
 
     /**
      * Define Gateway name
@@ -97,4 +88,5 @@ class WebPay implements PaymentGateway {
     {
         // TODO: Implement generateInvoice() method.
     }
+
 }

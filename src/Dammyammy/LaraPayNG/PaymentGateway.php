@@ -19,6 +19,10 @@ interface PaymentGateway {
 //     */
 //    public function via(PaymentGateway $driver);
 
+//    public function forItem($transactionData);
+
+    public function createPayButton($transactionData);
+
     /**
      * @param $transactionData
      *
