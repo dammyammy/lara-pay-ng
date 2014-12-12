@@ -22,12 +22,12 @@ class LaraPayNGServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-//        $this->app['lara-pay-ng'] = $this->app->share(function($app)
-//        {
-//            return new LaraPayNG;
-//        });
-
         $this->app['lara-pay-ng'] = $this->app->share(function($app)
+        {
+            return new PaymentGatewayManager($this->app['config'], $app);
+        });
+
+        $this->app['pay'] = $this->app->share(function($app)
         {
             return new PaymentGatewayManager($this->app['config'], $app);
         });
@@ -72,7 +72,7 @@ class LaraPayNGServiceProvider extends ServiceProvider {
 	 */
 	public function provides()
 	{
-        return ['lara-pay-ng', 'gtpay', 'voguepay', 'webpay'];
+        return ['lara-pay-ng', 'gtpay', 'voguepay', 'webpay', 'pay'];
 	}
 
 }

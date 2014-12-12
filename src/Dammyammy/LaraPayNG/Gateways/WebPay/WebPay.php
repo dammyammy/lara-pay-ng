@@ -13,6 +13,36 @@ class WebPay extends Helpers implements PaymentGateway {
      */
     const GATEWAY = 'WebPay';
 
+
+    /**
+     * @param $key
+     *
+     * Retrieve A Config Key From WebPay Gateway Array
+     *
+     * @return mixed
+     */
+    public function config($key)
+    {
+        return $this->getConfig(strtolower(self::GATEWAY),$key);
+    }
+
+    /**
+     * @param $productId
+     * @param $transactionData
+     * @param string $class
+     * @param string $buttonTitle
+     * @param string $gateway
+     *
+     * Render Buy Button For Particular Product
+     *
+     * @return string
+     * @throws \Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     */
+    public function buyButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
+    {
+        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+    }
+
     public function processTransaction($transactionData)
     {
 

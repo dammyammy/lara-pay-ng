@@ -3,6 +3,7 @@
 
 namespace Dammyammy\LaraPayNG;
 
+use Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use Dammyammy\LaraPayNG\Gateways\GTPay\GTPay;
 use Dammyammy\LaraPayNG\Gateways\VoguePay\VoguePay;
 use Dammyammy\LaraPayNG\Gateways\WebPay\WebPay;
@@ -65,13 +66,21 @@ class PaymentGatewayManager extends Manager {
     /**
      * Get the default provider driver name.
      *
+     * @throws UnknownPaymentGatewayException
      * @return string
      */
     public function getDefaultDriver()
     {
-        return isset($this->app['config']['lara-pay-ng::gateways.driver'])
-                ? $this->app['config']['lara-pay-ng::gateways.driver']
-                : 'gtpay';
+        $driver = $this->config->get('lara-pay-ng::gateways.driver');
+
+        if(in_array($driver, ['gtpay', 'webpay', 'voguepay']))
+        {
+            return $driver;
+        }
+
+        throw new UnknownPaymentGatewayException;
+
+
     }
 
     /**
@@ -82,7 +91,7 @@ class PaymentGatewayManager extends Manager {
      */
     public function setDefaultDriver($name)
     {
-        $this->app['config']['lara-pay-ng::gateways.driver'] = $name;
+        $this->config->set('lara-pay-ng::gateways.driver', $name);
     }
 
 }

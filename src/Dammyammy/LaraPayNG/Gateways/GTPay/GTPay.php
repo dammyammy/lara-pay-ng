@@ -16,6 +16,36 @@ class GTPay extends Helpers implements PaymentGateway {
     const GATEWAY = 'GTPay';
 
 
+    /**
+     * @param $key
+     *
+     * Retrieve A Config Key From GTPay Gateway Array
+     *
+     * @return mixed
+     */
+    public function config($key)
+    {
+        return $this->getConfig(strtolower(self::GATEWAY),$key);
+    }
+
+    /**
+     * @param string $productId
+     * @param array $transactionData
+     * @param string $class
+     * @param string $buttonTitle
+     * @param string $gateway
+     *
+     * Render Buy Button For Particular Product
+     *
+     * @throws \Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     * @return string
+     */
+    public function buyButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
+    {
+        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+    }
+
+
     public function processTransaction($transactionData)
     {
         $client = new Client(['base_url' => 'https://ibank.gtbank.com']);

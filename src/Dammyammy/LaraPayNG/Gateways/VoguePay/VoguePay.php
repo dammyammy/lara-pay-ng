@@ -14,7 +14,40 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     const GATEWAY = 'VoguePay';
 
+    /**
+     * @param $key
+     *
+     * Retrieve A Config Key From VoguePay Gateway Array
+     *
+     * @return mixed
+     */
+    public function config($key)
+    {
+        return $this->getConfig(strtolower(self::GATEWAY),$key);
+    }
 
+    /**
+     * @param string $productId
+     * @param array $transactionData
+     * @param string $class
+     * @param string $buttonTitle
+     * @param string $gateway
+     *
+     * Render Buy Button For Particular Product
+     *
+     * @throws \Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     * @return string
+     */
+    public function buyButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
+    {
+        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+    }
+
+    /**
+     * @param $transactionData
+     *
+     * @return mixed|void
+     */
     public function processTransaction($transactionData)
     {
 
@@ -105,5 +138,7 @@ class VoguePay extends Helpers implements PaymentGateway {
     {
         // TODO: Implement generateInvoice() method.
     }
+
+
 
 }

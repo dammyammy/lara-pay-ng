@@ -21,7 +21,18 @@ interface PaymentGateway {
 
 //    public function forItem($transactionData);
 
-    public function createPayButton($transactionData);
+    /**
+     * @param string $productId
+     * @param array $transactionData
+     * @param string $class
+     * @param $buttonTitle
+     * @param string $gateway
+     *
+     * Render Buy Button For Particular Product
+     *
+     * @return mixed
+     */
+    public function buyButton($productId, $transactionData, $class, $buttonTitle, $gateway);
 
     /**
      * @param $transactionData
@@ -51,7 +62,14 @@ interface PaymentGateway {
     public function generateInvoice($transactionData);
 
 
-
+    /**
+     * @param $key
+     *
+     * Retrieve A Config Key From Default Gateway Array
+     *
+     * @return mixed
+     */
+    public function config($key);
 
 
 //    /**
@@ -60,12 +78,14 @@ interface PaymentGateway {
 //     * @param string $val
 //     */
 //    public function setSandboxMode($val);
+
 //    /**
 //     * Set merchant account.
 //     *
 //     * @param string $val
 //     */
 //    public function setMerchantAccount($val);
+
 //    /**
 //     * Transform payment fields and build to array
 //     *
