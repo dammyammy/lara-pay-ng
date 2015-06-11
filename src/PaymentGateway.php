@@ -24,8 +24,14 @@ interface PaymentGateway {
      *
      * @return mixed
      */
-    public function processTransaction($transactionData);
+    public function sendTransactionToGateway($transactionData);
 
+
+    /**
+     *
+     * @return mixed
+     */
+    public function receiveTransactionResponse($transactionData);
 
     /**
      * Log Transaction
@@ -35,6 +41,15 @@ interface PaymentGateway {
      * @return
      */
     public function logTransaction($transactionData);
+
+    /**
+     * Log Transaction Response
+     *
+     * @param $transactionData
+     *
+     * @return
+     */
+    public function logResponse($transactionData);
 
 
     /**

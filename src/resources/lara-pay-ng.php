@@ -1,8 +1,8 @@
 <?php
 
-return array(
+return [
 
-    'gateways' => array(
+    'gateways' => [
 
         /*
         |--------------------------------------------------------------------------
@@ -33,7 +33,7 @@ return array(
        |
        */
 
-        'routes' => array(
+        'routes' => [
             'success_route'            => 'thank_you', // Route::get('thank_you');
             'success_route_name'       => 'thank_you', // Route::get('thank_you', ['as' => 'thank_you']);
             'success_view_name'        => 'frontend.larapay.success', // View::make('frontend.success');
@@ -43,7 +43,7 @@ return array(
             'failure_view_name'        => 'frontend.larapay.failed', // View::make('frontend.success');
 
 
-        ),
+        ],
 
 
         /*
@@ -55,17 +55,17 @@ return array(
        | Change to for Testing https://gtweb.gtbank.com/GTPay/Tranx.aspx
        */
 
-        'gtpay'     => array(
-            'gtpay_mert_id'          => getenv('GTPAY_MERCHANT_ID'),
-            'gtpay_tranx_curr'       => getenv('CURRENCY'),
+        'gtpay'     => [
+            'gtpay_mert_id'          => env('GTPAY_MERCHANT_ID', 'GTBxxxxxxxxxxxx'),
+            'gtpay_tranx_curr'       => env('CURRENCY', '566'),
             'gtpay_no_show_gtbank'   => 'yes',
             'gtpay_gway_first'       => 'no', // yes or no
             'gtpay_gway_name'       =>  null, // webpay or migs or null if no is specified gway_first
-            'hashkey'                => getenv('GTPAY_HASH_KEY'),
-            'gtpay_tranx_noti_url'   => route('pay') ,
+            'hashkey'                => env('GTPAY_HASH_KEY', 'Your Insanely Long HashKey from GTB'),
+            'gtpay_tranx_noti_url'   => env('GTPAY_REDIRECT_URL', route('/')),
             'gatewayUrl'             => 'https://ibank.gtbank.com/GTPay/Tranx.aspx'
 
-        ),
+        ],
 
 
 
@@ -78,13 +78,13 @@ return array(
         | Change Gateway Url to https://stageserv.interswitchng.com/test_paydirect for Production
         */
 
-        'webpay'     => array(
-            'mert_id'           => getenv('WEBPAY_MERCHANT_ID'),
-            'currency'          => getenv('CURRENCY'),
-            'hashkey'           => getenv('WEBPAY_HASH_KEY'),
-            'site_redirect_url' => route('pay'),
+        'webpay'     => [
+            'mert_id'           => env('WEBPAY_MERCHANT_ID', 'xxxxx'),
+            'currency'          => env('CURRENCY', '566'),
+            'hashkey'           => env('WEBPAY_HASH_KEY', 'Your Insanely Long HashKey from Interswitch'),
+            'site_redirect_url' => env('WEBPAY_REDIRECT_URL', route('/')),
             'gatewayUrl'        => 'https://stageserv.interswitchng.com/test_paydirect'
-        ),
+        ],
 
 
         /*
@@ -94,15 +94,17 @@ return array(
         |
         */
 
-        'voguepay'     => array(
-            'v_merchant_id'     => '4291-0024965',
-            'developer_code'    => '55666',
+        'voguepay'     => [
+            'v_merchant_id'     => env('VOGUEPAY_MERCHANT_ID', 'demo'),
+            'developer_code'    => env('VOGUEPAY_DEV_CODE','demo'),
             'submitButton'      => 'buynow_red.png',
-            'store_id'          => '25',
-            'notify_url'        => route('notification'),
+            'store_id'          => env('VOGUEPAY_STORE_ID','1'),
+            'notify_url'        => env('VOGUEPAY_REDIRECT_URL', route('/')),
+
+
             'gatewayUrl'        => 'https://voguepay.com/pay/',
 
-        ),
-    ),
+        ]
+    ]
 
-);
+];

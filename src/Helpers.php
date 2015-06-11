@@ -407,7 +407,7 @@ class Helpers {
 
         foreach ( $this->getConfig('voguepay') as $key => $val )
         {
-            if(!is_null($this->getConfig('voguepay', $key)) AND $key != 'gatewayUrl' AND $key != 'submitButton')
+            if(!is_null($this->getConfig('voguepay', $key)) AND $key != 'submitButton')
             {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
@@ -415,13 +415,23 @@ class Helpers {
 
         $transactionId[] = '<input type="hidden" name="merchant_ref" value="' . $this->generateTransactionId($productId) . '" />' . "\n";
 
-        $addition[] = in_array($this->getConfig('voguepay', 'submitButton'), $voguePayButtons)
+        $defaultButton = $this->getConfig('voguepay', 'submitButton');
+
+        $addition[] = in_array($defaultButton, $voguePayButtons)
             ? '<input type="image"  src="//voguepay.com/images/buttons/' .
-            $this->getConfig('voguepay', 'submitButton') . '" alt="Submit">'
+            $defaultButton . '" alt="Submit">'
 
             : '<input type="submit"  class="' . $class . '">' . $buttonTitle . '</input>';
 
-        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
+//        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
+//                    ' . implode('', $configs) . '
+//                    ' . implode('', $transactionId) . '
+//                    ' . implode('', $hiddens) . '
+//                    ' . implode('', $addition) . '
+//                </form>';
+
+
+        $form = '<form method="POST" action="' . route('notification') . '" id="' . $formId . '">
                     ' . implode('', $configs) . '
                     ' . implode('', $transactionId) . '
                     ' . implode('', $hiddens) . '

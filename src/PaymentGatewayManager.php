@@ -68,7 +68,7 @@ class PaymentGatewayManager extends Manager {
      */
     public function getDefaultDriver()
     {
-        $driver = $this->config->get('lara-pay-ng::gateways.driver');
+        $driver = $this->config->get('lara-pay-ng.gateways.driver');
 
         if(in_array($driver, ['gtpay', 'webpay', 'voguepay']))
         {
@@ -88,7 +88,7 @@ class PaymentGatewayManager extends Manager {
      */
     public function setDefaultDriver($name)
     {
-        $this->config->set('lara-pay-ng::gateways.driver', $name);
+        $this->config->set('lara-pay-ng.gateways.driver', $name);
     }
 
 }

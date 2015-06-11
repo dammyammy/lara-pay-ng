@@ -41,7 +41,7 @@ class WebPay extends Helpers implements PaymentGateway {
         return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
     }
 
-    public function processTransaction($transactionData)
+    public function sendTransactionToGateway($transactionData)
     {
 
 

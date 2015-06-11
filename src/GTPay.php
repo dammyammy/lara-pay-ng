@@ -43,13 +43,13 @@ class GTPay extends Helpers implements PaymentGateway {
     }
 
 
-    public function processTransaction($transactionData)
+    public function sendTransactionToGateway($transactionData)
     {
         $client = new Client(['base_url' => 'https://ibank.gtbank.com']);
 
         $response = $client->get('/GTPayService/gettransactionstatus.json', [
             'query'     =>  [
-                'mertid'  => $this->app['config']['lara-pay-ng::gateways.gtpay.mert_id'],
+                'mertid'  => $this->app['config']['lara-pay-ng.gateways.gtpay.mert_id'],
                 'amount'  => $transactionData['amount'],
                 'tranxid' => $transactionData['id'],
                 'hash'    => $this->generateVerificationHash($transactionData['id'])

@@ -44,14 +44,21 @@ class PaymentController extends Controller {
         }
     }
 
-    public function success($result = [])
+    public function notification(Request $request)
     {
-        return view(config('lara-pay-ng.gateways.routes.success_view_name'), compact('result'));
+        $data = $request->all();
+
+        return $this->paymentGateway->receiveTransactionResponse($data);
     }
 
-    public function failed($result = [])
+    public function success()
     {
-        return View.make(config('lara-pay-ng.gateways.routes.failure_view_name'), compact('result'));
+        return view(config('lara-pay-ng.gateways.routes.success_view_name'));
+    }
+
+    public function failed()
+    {
+        return view(config('lara-pay-ng.gateways.routes.failure_view_name'));
     }
 
     /**
@@ -61,9 +68,7 @@ class PaymentController extends Controller {
     {
         $data = $request->all();
 
-        $transactionId = $request->input('transaction_id');
-
-        $result = $this->paymentGateway->processTransaction($transactionId);
+        $result = $this->paymentGateway->sendTransactionToGateway($data);
         // Compare DB Amount & Returned amount
         // Update DB
         // Redirect as appropriate
@@ -80,9 +85,9 @@ class PaymentController extends Controller {
 
         $data = $request->all();
 
-        $transactionId = $request->input('transaction_id');
+//        $transactionId = $request->input('transaction_id');
 
-        $result = $this->paymentGateway->processTransaction($transactionId);
+        $result = $this->paymentGateway->sendTransactionToGateway($data);
         // Compare DB Amount & Returned amount
         // Update DB
         // Redirect as appropriate
@@ -98,9 +103,7 @@ class PaymentController extends Controller {
         // WebPay Specific Processing
         $data = $request->all();
 
-        $transactionId = $request->input('transaction_id');
-
-        $result = $this->paymentGateway->processTransaction($transactionId);
+        $result = $this->paymentGateway->sendTransactionToGateway($data);
         // Compare DB Amount & Returned amount
         // Update DB
         // Redirect as appropriate
