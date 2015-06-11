@@ -13,10 +13,6 @@
         "guzzlehttp/guzzle": "~5.0"
     },
     "autoload": {
-      "classmap": [
-          "src/resources/migrations",
-          "src/resources/controllers"
-        ],
         "psr-4": {
             "LaraPayNG\\": "src/"
         }

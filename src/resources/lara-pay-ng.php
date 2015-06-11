@@ -27,25 +27,48 @@ return array(
         'transactionIdPrefix' => 'COMPANY' . time() . 'PRODUCT',
 
         /*
-        |--------------------------------------------------------------------------
-        | GTPay by GTBank Settings
-        |--------------------------------------------------------------------------
-        | https://ibank.gtbank.com/GTPay/Test/mman-tech.html
-        | Change to for Testing
-        */
+       |--------------------------------------------------------------------------
+       | Routes Related
+       |--------------------------------------------------------------------------
+       |
+       */
+
+        'routes' => array(
+            'success_route'            => 'thank_you', // Route::get('thank_you');
+            'success_route_name'       => 'thank_you', // Route::get('thank_you', ['as' => 'thank_you']);
+            'success_view_name'        => 'frontend.larapay.success', // View::make('frontend.success');
+
+            'failure_route'            => 'failed', // Route::get('failed');
+            'failure_route_name'       => 'failed', // Route::get('failed', ['as' => 'failed']);
+            'failure_view_name'        => 'frontend.larapay.failed', // View::make('frontend.success');
+
+
+        ),
+
+
+        /*
+       |--------------------------------------------------------------------------
+       | GTPay by GTBank Settings
+       |--------------------------------------------------------------------------
+       | https://ibank.gtbank.com/GTPay/Test/mman-tech.html
+       | https://ibank.gtbank.com/GTPay/Test/TestMerchant.aspx
+       | Change to for Testing https://gtweb.gtbank.com/GTPay/Tranx.aspx
+       */
 
         'gtpay'     => array(
-            'gtpay_mert_id'          => getenv('MERCHANT_ID'),
+            'gtpay_mert_id'          => getenv('GTPAY_MERCHANT_ID'),
             'gtpay_tranx_curr'       => getenv('CURRENCY'),
+            'gtpay_no_show_gtbank'   => 'yes',
             'gtpay_gway_first'       => 'no', // yes or no
             'gtpay_gway_name'       =>  null, // webpay or migs or null if no is specified gway_first
-            'hashkey'                => getenv('HASH_KEY'),
-            'gtpay_tranx_noti_url'   => route('pay'),
-            'success_url'            => route('thank_you'),
-            'fail_url'               => route('failed'),
+            'hashkey'                => getenv('GTPAY_HASH_KEY'),
+            'gtpay_tranx_noti_url'   => route('pay') ,
             'gatewayUrl'             => 'https://ibank.gtbank.com/GTPay/Tranx.aspx'
 
         ),
+
+
+
 
         /*
         |--------------------------------------------------------------------------
@@ -56,13 +79,13 @@ return array(
         */
 
         'webpay'     => array(
+            'mert_id'           => getenv('WEBPAY_MERCHANT_ID'),
             'currency'          => getenv('CURRENCY'),
             'hashkey'           => getenv('WEBPAY_HASH_KEY'),
             'site_redirect_url' => route('pay'),
-            'success_url'       => route('thank_you'),
-            'fail_url'          => route('failed'),
             'gatewayUrl'        => 'https://stageserv.interswitchng.com/test_paydirect'
         ),
+
 
         /*
         |--------------------------------------------------------------------------
@@ -77,10 +100,9 @@ return array(
             'submitButton'      => 'buynow_red.png',
             'store_id'          => '25',
             'notify_url'        => route('notification'),
-            'success_url'       => route('thank_you'),
-            'fail_url'          => route('failed'),
             'gatewayUrl'        => 'https://voguepay.com/pay/',
 
         ),
     ),
+    
 );
