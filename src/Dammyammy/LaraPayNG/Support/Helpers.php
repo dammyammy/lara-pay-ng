@@ -3,6 +3,7 @@
 
 namespace Dammyammy\LaraPayNG\Support;
 
+use Dammyammy\LaraPayNG\Exceptions\UnknownConfigException;
 use Dammyammy\LaraPayNG\Exceptions\UnspecifiedPayItemIdException;
 use Dammyammy\LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
 use Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException;
@@ -127,7 +128,7 @@ class Helpers {
                 return hash(
                             'sha512',
                             $this->generateTransactionId($productId) . $transactionAmount .
-                            $this->getConfig('gtpay', 'tranx_noti_url') .
+                            $this->getConfig('gtpay', 'gtpay_tranx_noti_url') .
                             $this->getConfig('gtpay', 'hashkey'),
                             false
                         );
@@ -170,7 +171,7 @@ class Helpers {
         }
 
 //    mertid + tranxid + hashkey
-        return hash('sha512', $this->getConfig('gtpay', 'mert_id') . $tranx_id . $this->getConfig('gtpay', 'hashkey'), false);
+        return hash('sha512', $this->getConfig('gtpay', 'gtpay_mert_id') . $tranx_id . $this->getConfig('gtpay', 'hashkey'), false);
     }
 
     /**
@@ -220,6 +221,7 @@ class Helpers {
      * @param string $gateway
      * @param null|string $key
      *
+     * @throws UnknownConfigException
      * @return array|mixed|string
      */
     protected function getConfig($gateway = '', $key = '*')
@@ -249,7 +251,7 @@ class Helpers {
                 break;
 
             default:
-                return 'Unknown Config Variable Requested!!';
+                throw new UnknownConfigException('Unknown Config Variable Requested!!');
                 break;
         }
 
@@ -281,7 +283,7 @@ class Helpers {
         foreach ( $this->getConfig('gtpay') as $key => $val )
         {
             if(!is_null($this->getConfig('gtpay', $key)) AND $key != 'gatewayUrl' AND $key != 'hashkey'
-                AND $key != 'success_url' AND $key != 'fail_url'
+                AND $key != 'success_url' AND $key != 'fail_url' AND array_key_exists($key, $transactionData) === false
             )
             {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
@@ -337,7 +339,9 @@ class Helpers {
 
         foreach ( $this->getConfig('webpay') as $key => $val )
         {
-            if(!is_null($this->getConfig('webpay', $key)) AND $key != 'gatewayUrl' AND $key != 'hashkey')
+            if(!is_null($this->getConfig('webpay', $key)) AND $key != 'gatewayUrl' AND $key != 'hashkey'
+                AND array_key_exists($key, $transactionData) === false
+            )
             {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
@@ -406,7 +410,9 @@ class Helpers {
 
         foreach ( $this->getConfig('voguepay') as $key => $val )
         {
-            if(!is_null($this->getConfig('voguepay', $key)) AND $key != 'gatewayUrl' AND $key != 'submitButton')
+            if(!is_null($this->getConfig('voguepay', $key)) AND $key != 'gatewayUrl' AND $key != 'submitButton'
+                AND array_key_exists($key, $transactionData) === false
+            )
             {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
@@ -437,6 +443,7 @@ class Helpers {
      * @param $key
      * @param $keywithdot
      *
+     * @throws UnknownConfigException
      * @return mixed|string
      */
     private function getGatewayConfig($gateway, $key, $keywithdot)
@@ -444,7 +451,8 @@ class Helpers {
         if ( $key == '*' ) return $this->config->get('lara-pay-ng::gateways.' . $gateway);
 
         if ( ! array_key_exists($key, $this->config->get('lara-pay-ng::gateways.' . $gateway)) )
-            return 'Trying to get an Unknown ' . $gateway . ' Config';
+            throw new UnknownConfigException('Trying to get an Unknown ' . $gateway . $key . ' Config');
+//        return 'Trying to get an Unknown ' . $gateway . ' Config';
 
         return $this->config->get('lara-pay-ng::gateways.'. $gateway . $keywithdot);
     }

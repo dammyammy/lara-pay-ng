@@ -53,6 +53,8 @@ class LaraPayNGServiceProvider extends ServiceProvider {
         AliasLoader::getInstance()->alias('Pay', '\Dammyammy\LaraPayNG\Facades\Pay');
         AliasLoader::getInstance()->alias('VoguePay', '\Dammyammy\LaraPayNG\Facades\VoguePay');
         AliasLoader::getInstance()->alias('WebPay', '\Dammyammy\LaraPayNG\Facades\WebPay');
+
+//        require_once __DIR__.'/../../routes.php';
 	}
 
     /**

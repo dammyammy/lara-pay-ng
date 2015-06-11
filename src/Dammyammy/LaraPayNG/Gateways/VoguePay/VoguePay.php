@@ -44,28 +44,49 @@ class VoguePay extends Helpers implements PaymentGateway {
     }
 
     /**
-     * @param $transactionData
+     * @param $transactionId
+     *
+     * @internal param $transactionData
      *
      * @return mixed|void
      */
-    public function processTransaction($transactionData)
+    public function processTransaction($transactionId)
     {
+        $client = new Client(['base_url' => 'https://voguepay.com']);
 
-//        https://ibank.gtbank.com/GTPayService/gettransactionstatus.json?mertid=212&amount=200000&tranxid=PLM_1394115494_11180&hash=F48289B1C72218C6C02884C26438FA070864B624D1FD82C90F858AF268B2B82F7A3D2311400B29E9B3731068B89EB8007F36B642838C821CAB47D2AAFB5FA0EF
-        $client = new Client(['base_url' => 'https://ibank.gtbank.com']);
-
-        $response = $client->get('/GTPayService/gettransactionstatus.json', [
+        $response = $client->get('/', [
             'query'     =>  [
-                                'mertid'  => $this->app['config']['services.payment.gtpay.mert_id'],
-                                'amount'  => $transactionData['amount'],
-                                'tranxid' => $transactionData['id'],
-                                'hash'    => $this->helper->generateVerificationHash($transactionData['id'])
-
+                                'v_transaction_id'  => $transactionId,
+                                'type'  => 'json'
                             ],
             'headers'   =>  ['Accept' => 'application/json' ]
         ]);
 
-        dd($response->json());
+        $transactionDetails = $response->json();
+
+
+
+//        'transaction_id' => string 'demo-548db383b0436' (length=18)
+//  'email' => string 'dammyammy@gmail.com' (length=19)
+//  'total' => string '1000' (length=4)
+//  'merchant_ref' => string 'COMPANY1418572090PRODUCT32' (length=26)
+//  'memo' => string 'Waffles Served With Maple Syrup And Banana' (length=42)
+//  'status' => string 'Approved' (length=8)
+//  'date' => string '2014-12-14 16:58:20' (length=19)
+//  'method' => string 'voguepay' (length=8)
+//  'referrer' => string '' (length=0)
+//  'total_paid_by_buyer' => string '1000' (length=4)
+
+//        'transaction_id' => string 'demo-548db1edeeb7e' (length=18)
+//        'email' => string 'failed@gmma.cc' (length=14)
+//          'total' => string '1000' (length=4)
+//          'merchant_ref' => string '' (length=0)
+//          'memo' => string 'Waffles Served With Maple Syrup And Banana' (length=42)
+//          'status' => string 'Cancelled' (length=9)
+//          'date' => string '2014-12-14 16:52:47' (length=19)
+//          'method' => string 'voguepay' (length=8)
+//          'referrer' => string '' (length=0)
+//          'total_paid_by_buyer' => string '1000' (length=4)
 
 //        #It is assumed that you have put the URL to this file in the notification url (notify_url)
 //##of the form you submitted to voguepay.

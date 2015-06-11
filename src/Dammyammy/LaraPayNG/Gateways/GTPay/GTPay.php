@@ -45,14 +45,18 @@ class GTPay extends Helpers implements PaymentGateway {
         return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
     }
 
-
+    /**
+     * @param $transactionData
+     *
+     * @return mixed|void
+     */
     public function processTransaction($transactionData)
     {
         $client = new Client(['base_url' => 'https://ibank.gtbank.com']);
 
         $response = $client->get('/GTPayService/gettransactionstatus.json', [
             'query'     =>  [
-                'mertid'  => $this->app['config']['lara-pay-ng::gateways.gtpay.mert_id'],
+                'mertid'  => $this->config('gtpay_mert_id'),
                 'amount'  => $transactionData['amount'],
                 'tranxid' => $transactionData['id'],
                 'hash'    => $this->generateVerificationHash($transactionData['id'])
@@ -61,7 +65,7 @@ class GTPay extends Helpers implements PaymentGateway {
             'headers'   =>  ['Accept' => 'application/json' ]
         ]);
 
-        dd($response->json());
+        dd($result = $response->json());
 
         // Save Response to DB (Keep Transaction Detail)
         // Determine If the Transaction Failed Or Succeeded & Redirect As Appropriate
@@ -71,6 +75,13 @@ class GTPay extends Helpers implements PaymentGateway {
 
 
         //        . $transactionData['verificatioHash']
+
+        if(($result['Amount'] == $transactionData['Amount']) AND ($result['ResponseCode'] == '00'))
+        {
+            // It Succeeded
+//            Ancelotti is perfect for Madrid, says Sacchi; Dortmund with no room for error in visit to Hertha Berlin; Real Madrid cannot make mistakes - Navas;
+//            DB::
+        }
 
 
 

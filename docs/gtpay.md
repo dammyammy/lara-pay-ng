@@ -459,3 +459,37 @@ On transactions completion, it is imperative for the merchant to requery the sta
         </tr>
     </tbody>
 </table>
+
+
+
+
+# Test Cards 
+
+** All Test cards are Verve Cards. CVV2 for all the cards is 123 **
+
+### Successful transactions
+    CardNo: 6280511000000095
+    Expiry: Dec 2026
+    Pin:    0000
+    CCV2:   123
+        
+        
+### Expired Card
+    CardNo: 6280511000000020
+    Expiry: Jan 2013
+    Pin:    0000
+    CCV2:   123
+
+### Insufficient Funds
+    CardNo: 6280511000000046
+    Expiry: Dec 2026
+    Pin:    0000
+    CCV2:   123
+        
+### Incorrect Pin
+    CardNo: 6280511000000020
+    Expiry: Dec 2026
+    Pin:    1111
+    CCV2:   123
+        
+       
