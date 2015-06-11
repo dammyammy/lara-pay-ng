@@ -1,14 +1,11 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG\Gateways\GTPay;
+namespace LaraPayNG;
 
-use Dammyammy\LaraPayNG\PaymentGateway;
-use Dammyammy\LaraPayNG\Support\Helpers;
 use GuzzleHttp\Client;
 
 class GTPay extends Helpers implements PaymentGateway {
-
 
     /**
      * Define Gateway name
@@ -37,7 +34,7 @@ class GTPay extends Helpers implements PaymentGateway {
      *
      * Render Buy Button For Particular Product
      *
-     * @throws \Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
      * @return string
      */
     public function buyButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)

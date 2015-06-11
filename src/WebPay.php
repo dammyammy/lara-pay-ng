@@ -1,9 +1,7 @@
 <?php
 
-namespace Dammyammy\LaraPayNG\Gateways\WebPay;
+namespace LaraPayNG;
 
-use Dammyammy\LaraPayNG\PaymentGateway;
-use Dammyammy\LaraPayNG\Support\Helpers;
 use GuzzleHttp\Client;
 
 class WebPay extends Helpers implements PaymentGateway {

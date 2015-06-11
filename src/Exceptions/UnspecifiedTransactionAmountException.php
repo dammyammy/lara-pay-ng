@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG\Exceptions;
+namespace LaraPayNG\Exceptions;
 
 
 class UnspecifiedTransactionAmountException  extends \Exception {

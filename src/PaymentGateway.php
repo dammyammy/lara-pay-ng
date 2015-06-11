@@ -1,25 +1,10 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG;
+namespace LaraPayNG;
 
 
 interface PaymentGateway {
-
-//    public function pay();
-//
-//    public function processPayment();
-
-
-//    /**
-//     * @param $driver
-//     *
-//     *
-//     * @return mixed
-//     */
-//    public function via(PaymentGateway $driver);
-
-//    public function forItem($transactionData);
 
     /**
      * @param string $productId

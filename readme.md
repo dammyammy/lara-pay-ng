@@ -1,3 +1,27 @@
+Do Not Use, Currently been developed to be compatible with the latest version of Laravel. 
+
+Aiming to Integrate as much Payment Gateways As Possible
+
+TODO
+- Refactor Code
+- Create a Simple Straightforward API
+- Ability to Handle Transaction From Start to Finish
+- Back everything up with Tests.
+ 
+Gateways Currently being Looked at
+- CashEnvoy
+- SimplePay
+
+
+Currently Supported (Would be perfected soon)
+- GTPay
+- WebPay
+- VoguePay
+
+
+
+
+
 # Facades
 
 

@@ -1,12 +1,13 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG\Support;
+namespace LaraPayNG;
 
-use Dammyammy\LaraPayNG\Exceptions\UnspecifiedPayItemIdException;
-use Dammyammy\LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
-use Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-use Illuminate\Config\Repository;
+use LaraPayNG\Exceptions\UnspecifiedPayItemIdException;
+use LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
+use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
+
+use Illuminate\Contracts\Config\Repository as Config;
 
 
 class Helpers {
@@ -17,9 +18,9 @@ class Helpers {
     protected $config;
 
     /**
-     * @param Repository $config
+     * @param Config $config
      */
-    public function __construct(Repository $config)
+    public function __construct(Config $config)
     {
         $this->config = $config;
     }
@@ -213,7 +214,7 @@ class Helpers {
      */
     public function config($key)
     {
-        return $this->getConfig($this->config->get('lara-pay-ng::gateways.driver'), $key);
+        return $this->getConfig($this->config->get('lara-pay-ng.gateways.driver'), $key);
     }
 
     /**
@@ -229,11 +230,11 @@ class Helpers {
         switch ( $gateway )
         {
             case 'driver':
-                return $this->config->get('lara-pay-ng::gateways.driver');
+                return $this->config->get('lara-pay-ng.gateways.driver');
                 break;
 
             case 'transactionIdPrefix':
-                return $this->config->get('lara-pay-ng::gateways.transactionIdPrefix');
+                return $this->config->get('lara-pay-ng.gateways.transactionIdPrefix');
                 break;
 
             case 'webpay':
@@ -420,14 +421,12 @@ class Helpers {
 
             : '<input type="submit"  class="' . $class . '">' . $buttonTitle . '</input>';
 
-        $form = '
-            <form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
-                ' . implode('', $configs) . '
-                ' . implode('', $transactionId) . '
-                ' . implode('', $hiddens) . '
-                ' . implode('', $addition) . '
-            </form>
-        ';
+        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
+                    ' . implode('', $configs) . '
+                    ' . implode('', $transactionId) . '
+                    ' . implode('', $hiddens) . '
+                    ' . implode('', $addition) . '
+                </form>';
 
         return $form;
     }
@@ -441,36 +440,14 @@ class Helpers {
      */
     private function getGatewayConfig($gateway, $key, $keywithdot)
     {
-        if ( $key == '*' ) return $this->config->get('lara-pay-ng::gateways.' . $gateway);
+        if ( $key == '*' ) return $this->config->get('lara-pay-ng.gateways.' . $gateway);
 
-        if ( ! array_key_exists($key, $this->config->get('lara-pay-ng::gateways.' . $gateway)) )
+        if ( ! array_key_exists($key, $this->config->get('lara-pay-ng.gateways.' . $gateway)) )
             return 'Trying to get an Unknown ' . $gateway . ' Config';
 
-        return $this->config->get('lara-pay-ng::gateways.'. $gateway . $keywithdot);
+        return $this->config->get('lara-pay-ng.gateways.'. $gateway . $keywithdot);
+
     }
-
-
-    /**
-     * @param $gateway
-     * @param $key
-     *
-     * @return mixed
-     */
-
-//    public function generateTransactionData($dessert, $transactionId)
-//    {
-//        return 'name=' . $dessert->present()->name . ';pre=' . $dessert->present()->buyPrice
-//        . ';buyer=' . currentUserName() . '; transactionId=' . $transactionId;
-//    }
-
-
-
-
-//    public function generateTransactionMemo($dessert)
-//    {
-//        return 'Name: ' . $dessert->present()->name . '; Price: ' . $dessert->present()->buyPrice
-//        . '; Buyer: ' . currentUserName();
-//    }
 
 
 } 

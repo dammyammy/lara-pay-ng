@@ -1,13 +1,11 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG;
+namespace LaraPayNG;
 
-use Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-use Dammyammy\LaraPayNG\Gateways\GTPay\GTPay;
-use Dammyammy\LaraPayNG\Gateways\VoguePay\VoguePay;
-use Dammyammy\LaraPayNG\Gateways\WebPay\WebPay;
-use Illuminate\Config\Repository;
+use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
+
+use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Support\Manager;
 
 class PaymentGatewayManager extends Manager {
@@ -17,9 +15,8 @@ class PaymentGatewayManager extends Manager {
      */
     protected $config;
 
-    public function __construct(Repository $config)
+    public function __construct(Config $config)
     {
-
         $this->config = $config;
     }
 
@@ -56,7 +53,7 @@ class PaymentGatewayManager extends Manager {
      *
      * @param  PaymentGateway $provider
      *
-     * @return \Dammyammy\LaraPayNG\GatewayRepository
+     * @return \LaraPayNG\GatewayRepository
      */
     protected function repository($provider)
     {

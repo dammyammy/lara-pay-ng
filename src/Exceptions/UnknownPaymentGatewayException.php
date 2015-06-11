@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG\Exceptions;
+namespace LaraPayNG\Exceptions;
 
 
 class UnknownPaymentGatewayException extends \Exception {

@@ -1,14 +1,14 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG;
+namespace LaraPayNG;
 
-use Illuminate\Support\Traits\MacroableTrait;
+use Illuminate\Support\Traits\Macroable;
 
 class GatewayRepository {
 
-
-    use MacroableTrait {
+    use Macroable
+    {
         __call as macroCall;
     }
 
@@ -28,21 +28,6 @@ class GatewayRepository {
         $this->provider = $provider;
     }
 
-//    /**
-//     * Handle dynamic calls into macros or pass missing methods to the provider.
-//     *
-//     * @param  string  $method
-//     * @param  array   $parameters
-//     * @return mixed
-//     */
-//    public function __call($method, $parameters)
-//    {
-//
-//        return call_user_func_array([$this->provider, $method], $parameters);
-//
-//    }
-
-
     /**
      * Handle dynamic calls into macros or pass missing methods to the store.
      *
@@ -58,7 +43,7 @@ class GatewayRepository {
         }
         else
         {
-            return call_user_func_array(array($this->provider, $method), $parameters);
+            return call_user_func_array([$this->provider, $method], $parameters);
         }
     }
 

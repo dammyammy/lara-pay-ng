@@ -1,19 +1,11 @@
-<?php namespace Dammyammy\LaraPayNG;
+<?php namespace LaraPayNG;
 
-use Dammyammy\LaraPayNG\Gateways\GTPay\GTPay;
-use Dammyammy\LaraPayNG\Gateways\VoguePay\VoguePay;
-use Dammyammy\LaraPayNG\Gateways\WebPay\WebPay;
+
 use Illuminate\Foundation\AliasLoader;
+
 use Illuminate\Support\ServiceProvider;
 
 class LaraPayNGServiceProvider extends ServiceProvider {
-
-	/**
-	 * Indicates if loading of the provider is deferred.
-	 *
-	 * @var bool
-	 */
-	protected $defer = false;
 
 	/**
 	 * Register the service provider.
@@ -47,22 +39,25 @@ class LaraPayNGServiceProvider extends ServiceProvider {
             return new VoguePay($this->app['config'], $app);
         });
 
-
-
-        AliasLoader::getInstance()->alias('GTPay', '\Dammyammy\LaraPayNG\Facades\GTPay');
-        AliasLoader::getInstance()->alias('Pay', '\Dammyammy\LaraPayNG\Facades\Pay');
-        AliasLoader::getInstance()->alias('VoguePay', '\Dammyammy\LaraPayNG\Facades\VoguePay');
-        AliasLoader::getInstance()->alias('WebPay', '\Dammyammy\LaraPayNG\Facades\WebPay');
+        AliasLoader::getInstance()->alias('GTPay', '\LaraPayNG\Facades\GTPay');
+        AliasLoader::getInstance()->alias('Pay', '\LaraPayNG\Facades\Pay');
+        AliasLoader::getInstance()->alias('VoguePay', '\LaraPayNG\Facades\VoguePay');
+        AliasLoader::getInstance()->alias('WebPay', '\LaraPayNG\Facades\WebPay');
 	}
 
+
     /**
-     * Boot the service provider.
+     * Bootstrap the application services.
+     *
+     * Publishes package config file to applications config folder :) Thanks busayo
      *
      * @return void
      */
     public function boot()
     {
-        $this->package('dammyammy\lara-pay-ng','lara-pay-ng' );
+        $this->publishes([
+            __DIR__.'/config/lara-pay-ng.php' => config_path('lara-pay-ng.php')
+        ]);
     }
 
 	/**

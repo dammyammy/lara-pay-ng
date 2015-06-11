@@ -1,10 +1,8 @@
 <?php
 
 
-namespace Dammyammy\LaraPayNG\Gateways\VoguePay;
+namespace LaraPayNG;
 
-use Dammyammy\LaraPayNG\PaymentGateway;
-use Dammyammy\LaraPayNG\Support\Helpers;
 use GuzzleHttp\Client;
 
 class VoguePay extends Helpers implements PaymentGateway {
@@ -50,8 +48,6 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     public function processTransaction($transactionData)
     {
-
-//        https://ibank.gtbank.com/GTPayService/gettransactionstatus.json?mertid=212&amount=200000&tranxid=PLM_1394115494_11180&hash=F48289B1C72218C6C02884C26438FA070864B624D1FD82C90F858AF268B2B82F7A3D2311400B29E9B3731068B89EB8007F36B642838C821CAB47D2AAFB5FA0EF
         $client = new Client(['base_url' => 'https://ibank.gtbank.com']);
 
         $response = $client->get('/GTPayService/gettransactionstatus.json', [
