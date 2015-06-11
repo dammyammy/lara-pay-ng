@@ -55,8 +55,12 @@ class LaraPayNGServiceProvider extends ServiceProvider {
      */
     public function boot()
     {
+
+        include __DIR__ . '/resources/routes.php';
+
+        // config
         $this->publishes([
-            __DIR__.'/config/lara-pay-ng.php' => config_path('lara-pay-ng.php')
+            __DIR__. '/resources/lara-pay-ng.php' => base_path('config/lara-pay-ng.php')
         ]);
     }
 
