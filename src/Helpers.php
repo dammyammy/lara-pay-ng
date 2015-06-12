@@ -26,21 +26,21 @@ class Helpers {
     }
 
     /**
-     * @param string $productId
+     * @param string $transactionId
      * @param array $transactionData
      * @param string $class
      * @param string $buttonTitle
      *
-     * Render Buy Button For Particular Product
+     * Render Pay Button For Particular Product
      *
      * @return string
      * @throws UnknownPaymentGatewayException
      */
-    public function buyButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now')
+    public function payButton($transactionId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now')
     {
         $gateway = $this->getConfig('driver');
 
-        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway );
     }
 
     /**
@@ -58,7 +58,7 @@ class Helpers {
      *
      * Gateways use this method to build hidden form for product Buy Button.
      *
-     * @param string $productId
+     * @param string $transactionId
      * @param array $transactionData
      * @param string $class
      * @param string $buttonTitle
@@ -68,23 +68,23 @@ class Helpers {
      *
      * @return string HTML
      */
-    protected  function generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway)
+    protected  function generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway)
     {
 
         switch (strtolower($gateway))
         {
             case 'gtpay':
-                return $this->generateSubmitButtonForGTPay($productId, $transactionData, $class, $buttonTitle);
+                return $this->generateSubmitButtonForGTPay($transactionId, $transactionData, $class, $buttonTitle);
 
                 break;
 
             case 'webpay':
-                return $this->generateSubmitButtonForWebPay($productId, $transactionData, $class, $buttonTitle);
+                return $this->generateSubmitButtonForWebPay($transactionId, $transactionData, $class, $buttonTitle);
 
                 break;
 
             case 'voguepay':
-                return $this->generateSubmitButtonForVoguePay($productId, $transactionData, $class, $buttonTitle);
+                return $this->generateSubmitButtonForVoguePay($transactionId, $transactionData, $class, $buttonTitle);
 
                 break;
 
@@ -99,13 +99,13 @@ class Helpers {
 
     /**
      * Generate Transaction Id For Product
-     * @param $productId
+     * @param $transactionId
      *
      * @return string
      */
-    public function generateTransactionId($productId)
+    public function generateTransactionId($transactionId)
     {
-        return $this->getConfig('transactionIdPrefix') . $productId;
+        return $this->getConfig('transactionIdPrefix') . $transactionId;
     }
 
     /**
@@ -120,15 +120,15 @@ class Helpers {
      * @throws UnknownPaymentGatewayException
      * @return string
      */
-    public function generateTransactionHash($productId, $transactionAmount, $gateway = 'gtpay', $payItemId = null)
+    public function generateTransactionHash($transactionId, $transactionAmount, $gateway = 'gtpay', $payItemId = null)
     {
         switch ($gateway)
         {
             case 'gtpay':
                 return hash(
                             'sha512',
-                            $this->generateTransactionId($productId) . $transactionAmount .
-                            $this->getConfig('gtpay', 'tranx_noti_url') .
+                            $this->generateTransactionId($transactionId) . $transactionAmount .
+                            route($this->getConfig('gtpay', 'tranx_noti_url')) .
                             $this->getConfig('gtpay', 'hashkey'),
                             false
                         );
@@ -138,9 +138,9 @@ class Helpers {
             case 'webpay':
                 return hash(
                             'sha512',
-                            $this->generateTransactionId($productId) . $productId .
+                            $this->generateTransactionId($transactionId) . $transactionId .
                             $payItemId . $transactionAmount .
-                            $this->getConfig('webpay', 'site_redirect_url') .
+                            route($this->getConfig('webpay', 'site_redirect_url')) .
                             $this->getConfig('webpay', 'hashkey'),
                             false
                         );
@@ -266,7 +266,7 @@ class Helpers {
      * @throws UnknownPaymentGatewayException
      * @return string
      */
-    private function generateSubmitButtonForGTPay($productId, $transactionData, $class, $buttonTitle)
+    private function generateSubmitButtonForGTPay($transactionId, $transactionData, $class, $buttonTitle)
     {
         $formId = 'PayViaGTPay';
 
@@ -289,11 +289,11 @@ class Helpers {
             }
         }
 
-        $transactionId[] = '<input type="hidden" name="gtpay_tranx_id" value="' . $this->generateTransactionId($productId) . '" />' . "\n";
+        $transactionId[] = '<input type="hidden" name="gtpay_tranx_id" value="' . $this->generateTransactionId($transactionId) . '" />' . "\n";
 
         if (! isset($transactionData['gtpay_tranx_amt'])) throw new UnspecifiedTransactionAmountException;
 
-        $hash = '<input type="hidden" name="gtpay_tranx_hash" value="' . $this->generateTransactionHash($productId, $transactionData['gtpay_tranx_amt'], $gateway = 'gtpay') . '" />' . "\n";
+        $hash = '<input type="hidden" name="gtpay_tranx_hash" value="' . $this->generateTransactionHash($transactionId, $transactionData['gtpay_tranx_amt'], $gateway = 'gtpay') . '" />' . "\n";
 
 
         $addition[] = '<button type="submit"  class="' . $class . '">' . $buttonTitle . '</button>';
@@ -312,7 +312,7 @@ class Helpers {
     }
 
     /**
-     * @param $productId
+     * @param $transactionId
      * @param $transactionData
      * @param $class
      * @param $buttonTitle
@@ -322,7 +322,7 @@ class Helpers {
      * @throws UnspecifiedTransactionAmountException
      * @return string
      */
-    private function generateSubmitButtonForWebPay($productId, $transactionData, $class, $buttonTitle)
+    private function generateSubmitButtonForWebPay($transactionId, $transactionData, $class, $buttonTitle)
     {
 
         $formId = 'PayViaWebPay';
@@ -344,13 +344,13 @@ class Helpers {
             }
         }
 
-        $transactionId[] = '<input type="hidden" name="txn_ref" value="' . $this->generateTransactionId($productId) . '" />' . "\n";
-        $productId = '<input type="hidden" name="product_id" value="' . $productId . '" />' . "\n";
+        $transactionId[] = '<input type="hidden" name="txn_ref" value="' . $this->generateTransactionId($transactionId) . '" />' . "\n";
+        $transactionId = '<input type="hidden" name="product_id" value="' . $transactionId . '" />' . "\n";
 
         if (! isset($transactionData['amount'])) throw new UnspecifiedTransactionAmountException;
         if (! isset($transactionData['pay_item_id'])) throw new UnspecifiedPayItemIdException;
 
-        $hash = '<input type="hidden" name="hash" value="' . $this->generateTransactionHash($productId, $transactionData['amount'], 'webpay', $transactionData['pay_item_id']) . '" />' . "\n";
+        $hash = '<input type="hidden" name="hash" value="' . $this->generateTransactionHash($transactionId, $transactionData['amount'], 'webpay', $transactionData['pay_item_id']) . '" />' . "\n";
 
 
         $addition[] = '<button type="submit"  class="' . $class . '">' . $buttonTitle . '</button>';
@@ -358,7 +358,7 @@ class Helpers {
         $form = '
             <form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
                 ' . implode('', $transactionId) . '
-                ' . $productId . '
+                ' . $transactionId . '
                 ' . implode('', $configs) . '
                 ' . implode('', $hiddens) . '
                 ' . $hash . '
@@ -373,14 +373,14 @@ class Helpers {
     }
 
     /**
-     * @param string $productId
+     * @param string $transactionId
      * @param array $transactionData
      * @param string $class
      * @param string $buttonTitle
      *
      * @return string
      */
-    private function generateSubmitButtonForVoguePay($productId, $transactionData, $class, $buttonTitle)
+    private function generateSubmitButtonForVoguePay($transactionId, $transactionData, $class, $buttonTitle)
     {
         $voguePayButtons = [
             'buynow_blue.png', 'buynow_red.png', 'buynow_green.png', 'buynow_grey.png', 'addtocart_blue.png',
@@ -413,7 +413,9 @@ class Helpers {
             }
         }
 
-        $transactionId[] = '<input type="hidden" name="merchant_ref" value="' . $this->generateTransactionId($productId) . '" />' . "\n";
+        $transactionId[] = '<input type="hidden" name="merchant_ref" value="' . $this->generateTransactionId($transactionId) . '" />' . "\n";
+
+//        $token[] = '<input type="hidden" name="_token" value="' .csrf_token() .'" />' . "\n";
 
         $defaultButton = $this->getConfig('voguepay', 'submitButton');
 
@@ -423,20 +425,21 @@ class Helpers {
 
             : '<input type="submit"  class="' . $class . '">' . $buttonTitle . '</input>';
 
-//        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
-//                    ' . implode('', $configs) . '
-//                    ' . implode('', $transactionId) . '
-//                    ' . implode('', $hiddens) . '
-//                    ' . implode('', $addition) . '
-//                </form>';
-
-
-        $form = '<form method="POST" action="' . route('notification') . '" id="' . $formId . '">
+        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
                     ' . implode('', $configs) . '
                     ' . implode('', $transactionId) . '
                     ' . implode('', $hiddens) . '
                     ' . implode('', $addition) . '
                 </form>';
+
+
+//        $form = '<form method="POST" action="' . route('payment-notification') . '" id="' . $formId . '">
+//                    ' . implode('', $token) . '
+//                    ' . implode('', $configs) . '
+//                    ' . implode('', $transactionId) . '
+//                    ' . implode('', $hiddens) . '
+//                    ' . implode('', $addition) . '
+//                </form>';
 
         return $form;
     }

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
+use LaraPayNG\PaymentGatewayManager;
 
 
 class PaymentController extends Controller {
@@ -17,6 +18,41 @@ class PaymentController extends Controller {
     function __construct(PaymentGatewayManager $paymentGateway)
     {
         $this->paymentGateway = $paymentGateway;
+    }
+
+
+    public function checkout()
+    {
+
+        /*********************************************************************
+        *   Do Whatever You normally Would To get your Products Information
+        *   An example could be to get it out of the Session Store, Via Your Cart Package or Something
+        *   Or If you are Passing It Via a Request Object, Type-Hint the Method With your
+        *   Request Object to get it in here.
+        */
+
+
+        // Let the array contain all Necessary Data Needed (For the Default Gateway)
+        // i.e all Inputs for the PayButton
+        // to log The Transaction (Saving To DB)
+        $transactionData = [];
+
+
+        $transactionId = $this->paymentGateway->logTransaction($transactionData);
+
+
+        return redirect()->route('payment-page')
+                        ->with('transactionData', $transactionData)
+                        ->with('transactionId', $transactionId);
+    }
+
+
+    public function paymentPage()
+    {
+        $transactionData = Session::get( 'transactionData' );
+        $transactionId = Session::get( 'transactionId' );
+
+        return view('payment-page', compact('transactionData', 'transactionId'));
     }
 
 

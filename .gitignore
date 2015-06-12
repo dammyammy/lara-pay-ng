@@ -2,4 +2,7 @@
 composer.phar
 composer.lock
 .DS_Store
-.idea/
+.idea/*
+.idea/codeStyleSettings.xml
+.idea
+src/functions.php

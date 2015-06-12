@@ -7,24 +7,38 @@ namespace LaraPayNG;
 interface PaymentGateway {
 
     /**
+     * Log Transaction Before Paying So as To Persist Data
+     *
+     * @param $transactionData
+     *
+     * @return
+     */
+    public function logTransaction($transactionData);
+
+
+    /**
      * @param string $productId
      * @param array $transactionData
      * @param string $class
      * @param $buttonTitle
      * @param string $gateway
      *
-     * Render Buy Button For Particular Product
+     * Render Pay Button For Particular Transaction To Send Buyer To Gateway Portal
      *
      * @return mixed
      */
-    public function buyButton($productId, $transactionData, $class, $buttonTitle, $gateway);
+    public function payButton($productId, $transactionData, $class, $buttonTitle, $gateway);
+
+
 
     /**
-     * @param $transactionData
-     *
-     * @return mixed
-     */
-    public function sendTransactionToGateway($transactionData);
+//     * @param $transactionData
+//     *
+//     *
+//     *
+//     * @return mixed
+//     */
+//    public function sendTransactionToGateway($transactionData);
 
 
     /**
@@ -33,14 +47,6 @@ interface PaymentGateway {
      */
     public function receiveTransactionResponse($transactionData);
 
-    /**
-     * Log Transaction
-     *
-     * @param $transactionData
-     *
-     * @return
-     */
-    public function logTransaction($transactionData);
 
     /**
      * Log Transaction Response

@@ -31,12 +31,12 @@ class WebPay extends Helpers implements PaymentGateway {
      * @param string $buttonTitle
      * @param string $gateway
      *
-     * Render Buy Button For Particular Product
+     * Render Pay Button For Particular Product
      *
      * @return string
-     * @throws \Dammyammy\LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
      */
-    public function buyButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
+    public function payButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
         return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
     }

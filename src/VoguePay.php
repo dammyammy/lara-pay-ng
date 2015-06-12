@@ -13,33 +13,57 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     const GATEWAY = 'VoguePay';
 
-    /**
-     * @param $key
-     *
-     * Retrieve A Config Key From VoguePay Gateway Array
-     *
-     * @return mixed
-     */
-    public function config($key)
-    {
-        return $this->getConfig(strtolower(self::GATEWAY),$key);
-    }
 
     /**
-     * @param string $productId
+     * Log Transaction
+     *
+     * @param $transactionData
+     *
+     */
+    public function logTransaction($transactionData)
+    {
+
+//        return true;
+
+        $items = $this->serializeItemsToJson($transactionData);
+
+        $transactionId = DB::table(config('lara-pay-ng.gateways.voguepay.table'))->insertGetId([
+            'transaction_id' => $transactionData['transaction_id'],
+            'merchant_ref' => $transactionData['merchant_ref'],
+            'total' => $transactionData['total'],
+            'items' => $items,
+            'store_id' => isset($transactionData['store_id']) ? $transactionData['store_id']
+                : config('lara-pay-ng.gateways.voguepay.store_id'),
+            'recurrent' => isset($transactionData['recurrent']) ? $transactionData['recurrent']
+                : false,
+            'interval' => isset($transactionData['interval']) ? $transactionData['interval']
+                : null,
+
+            'payer_id' => isset($transactionData['payer_id']) ? $transactionData['payer_id']
+                : null,
+        ]);
+
+        return $transactionId;
+
+
+    }
+
+
+    /**
+     * @param string $transactionId
      * @param array $transactionData
      * @param string $class
      * @param string $buttonTitle
      * @param string $gateway
      *
-     * Render Buy Button For Particular Product
+     * Render Pay Button For Particular Product
      *
      * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
      * @return string
      */
-    public function buyButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
+    public function payButton($transactionId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
-        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway );
     }
 
     /**
@@ -92,6 +116,22 @@ class VoguePay extends Helpers implements PaymentGateway {
     public function receiveTransactionResponse($transactionId)
     {
 
+
+
+        //        $table->string('merchant_ref');
+//        $table->string('transaction_id');
+//        $table->float('total');
+//        $table->json('items');
+//        $table->string('store_id')->nullable();
+//        $table->string('recurrent')->nullable();
+//        $table->integer('interval')->nullable();
+//        $table->string('email')->nullable();
+//        $table->text('memo')->nullable();
+//        $table->float('received_total')->nullable();
+//        $table->string('referrer')->nullable();
+//        $table->string('method')->nullable();
+//        $table->timestamp('paid_at')->nullable();
+
         if (config('lara-pay-ng.gateways.voguepay.v_merchant_id') == 'demo') {
             $queryString = [
                 'v_transaction_id' => $transactionId['transaction_id'],
@@ -119,62 +159,6 @@ class VoguePay extends Helpers implements PaymentGateway {
         $transaction = json_decode($response, true);
 
         $this->logResponse($transaction);
-    }
-
-    /**
-     * Log Transaction
-     *
-     * @param $transactionData
-     *
-     */
-    public function logTransaction($transactionData)
-    {
-
-        //        memo (optional)	Provided by merchant	The transaction summary that will show on your transaction history page when you login to VoguePay
-//item_x	Name of product	The name of the product being purchased. x is a value starting from 1. If there are more than 1 products, you can have item_1, item_2, item_3... as shown in the Sample HTML Form. Each item_x has a corresponding description_x and price_x
-//description_x	Short description of product	The short description of the product being purchased. x corresponds to the number in item_x.
-//    price_x	Price of product.	The price of the product being purchased. x corresponds to the number in item_x.
-//    developer_code	A code unique to every developer. Using this code earns the developer a commission on every successful transaction made through any selected integration methods.	This optional field serves as a check for the form. Can be ommited. If included, will be used instead of the sum of all the prices.
-//    store_id	A unique store identifier which identifies a particular store a transaction was made.
-//    total	Total of all the prices (price_1 + price_2 + price_3...)	This optional field serves as a check for the form. Can be ommited. If included, will be used instead of the sum of all the prices.
-//    recurrent
-
-//        $table->string('merchant_ref');
-//        $table->string('transaction_id');
-//        $table->float('total');
-//        $table->json('items');
-//        $table->string('store_id')->nullable();
-//        $table->string('recurrent')->nullable();
-//        $table->integer('interval')->nullable();
-//        $table->string('email')->nullable();
-//        $table->text('memo')->nullable();
-//        $table->float('received_total')->nullable();
-//        $table->string('referrer')->nullable();
-//        $table->string('method')->nullable();
-//        $table->timestamp('paid_at')->nullable();
-
-        $items = json_encode([
-
-        ]);
-
-        DB::table('voguepay_transactions')->insert([
-            'transaction_id' => $transactionData['transaction_id'],
-            'merchant_ref' => $transactionData['merchant_ref'],
-            'total' => $transactionData['total'],
-            'items' => $items,
-            'store_id' => isset($transactionData['store_id']) ? $transactionData['store_id']
-                        : config('lara-pay-ng.gateways.voguepay.store_id'),
-            'recurrent' => isset($transactionData['recurrent']) ? $transactionData['recurrent']
-                : false,
-            'interval' => isset($transactionData['interval']) ? $transactionData['interval']
-                : null,
-
-            'payer_id' => isset($transactionData['payer_id']) ? $transactionData['payer_id']
-                : null,
-
-        ]);
-
-
     }
 
 
@@ -222,5 +206,50 @@ Then you should compare the $transaction['total'] with the total from your datab
     }
 
 
+
+    /**
+     * @param $key
+     *
+     * Retrieve A Config Key From VoguePay Gateway Array
+     *
+     * @return mixed
+     */
+    public function config($key)
+    {
+        return $this->getConfig(strtolower(self::GATEWAY),$key);
+    }
+
+    /**
+     * @param $transactionData
+     *
+     * @return array|string
+     */
+    private function serializeItemsToJson($transactionData)
+    {
+        $items = [ ];
+
+        foreach ($transactionData as $key => $value) {
+
+//            if (starts_with($key, ['item_','price_','description_'])) {
+//                $items[$key] = $value;
+//            }
+
+            if (strpos($key, 'item_') === 0) {
+                $items[substr($key, 5)]['item'] = $value;
+            }
+
+            if (strpos($key, 'price_') === 0) {
+                $items[substr($key, 6)]['price'] = $value;
+            }
+
+            if (strpos($key, 'description_') === 0) {
+                $items[substr($key, 12)]['description'] = $value;
+            }
+        }
+
+        $items = json_encode($items);
+
+        return $items;
+    }
 
 }

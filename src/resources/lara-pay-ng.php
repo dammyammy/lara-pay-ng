@@ -24,7 +24,7 @@ return [
         | We Specified a Sensible Default, Change as Appropriate
         */
 
-        'transactionIdPrefix' => 'COMPANY' . time() . 'PRODUCT',
+        'transactionIdPrefix' => 'COMPANY-' . time() . 'PRODUCT-',
 
         /*
        |--------------------------------------------------------------------------
@@ -62,8 +62,10 @@ return [
             'gtpay_gway_first'       => 'no', // yes or no
             'gtpay_gway_name'       =>  null, // webpay or migs or null if no is specified gway_first
             'hashkey'                => env('GTPAY_HASH_KEY', 'Your Insanely Long HashKey from GTB'),
-            'gtpay_tranx_noti_url'   => env('GTPAY_REDIRECT_URL', route('/')),
-            'gatewayUrl'             => 'https://ibank.gtbank.com/GTPay/Tranx.aspx'
+            'gtpay_tranx_noti_url'   => env('GTPAY_REDIRECT_URL', 'payment-notification'),
+            'gatewayUrl'             => 'https://ibank.gtbank.com/GTPay/Tranx.aspx',
+
+            'table'                 => 'gtpay_transactions',
 
         ],
 
@@ -82,8 +84,10 @@ return [
             'mert_id'           => env('WEBPAY_MERCHANT_ID', 'xxxxx'),
             'currency'          => env('CURRENCY', '566'),
             'hashkey'           => env('WEBPAY_HASH_KEY', 'Your Insanely Long HashKey from Interswitch'),
-            'site_redirect_url' => env('WEBPAY_REDIRECT_URL', route('/')),
-            'gatewayUrl'        => 'https://stageserv.interswitchng.com/test_paydirect'
+            'site_redirect_url' => env('WEBPAY_REDIRECT_URL', 'payment-notification'),
+            'gatewayUrl'        => 'https://stageserv.interswitchng.com/test_paydirect',
+
+            'table'             => 'webpay_transactions',
         ],
 
 
@@ -99,10 +103,11 @@ return [
             'developer_code'    => env('VOGUEPAY_DEV_CODE','demo'),
             'submitButton'      => 'buynow_red.png',
             'store_id'          => env('VOGUEPAY_STORE_ID','1'),
-            'notify_url'        => env('VOGUEPAY_REDIRECT_URL', route('/')),
+            'notify_url'        => env('VOGUEPAY_REDIRECT_URL', 'payment-notification'),
 
 
             'gatewayUrl'        => 'https://voguepay.com/pay/',
+            'table'             => 'voguepay_transactions',
 
         ]
     ]
