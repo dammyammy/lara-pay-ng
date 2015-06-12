@@ -110,4 +110,24 @@ class GTPay extends Helpers implements PaymentGateway {
         // TODO: Implement generateInvoice() method.
     }
 
+    /**
+     *
+     * @return mixed
+     */
+    public function receiveTransactionResponse($transactionData)
+    {
+        // TODO: Implement receiveTransactionResponse() method.
+    }
+
+    /**
+     * Log Transaction Response
+     *
+     * @param $transactionData
+     *
+     * @return
+     */
+    public function logResponse($transactionData)
+    {
+        // TODO: Implement logResponse() method.
+    }
 }
