@@ -1,23 +1,20 @@
 <?php
 
-
 namespace LaraPayNG;
 
 use Carbon\Carbon;
 use DB;
-
 use GuzzleHttp\Client;
 
-
-class VoguePay extends Helpers implements PaymentGateway {
-
+class VoguePay extends Helpers implements PaymentGateway
+{
     /**
-     * Define Gateway name
+     * Define Gateway name.
      */
     const GATEWAY = 'VoguePay';
 
     /**
-     * Log Transaction
+     * Log Transaction.
      *
      * @param $transactionData
      * @param null $payerId
@@ -31,9 +28,9 @@ class VoguePay extends Helpers implements PaymentGateway {
         $total = $this->sumItemPrices($transactionData);
 
         $valueToInsert = [
-            'total'          => isset($transactionData['total']) ? $transactionData['total']: $total,
+            'total'          => isset($transactionData['total']) ? $transactionData['total'] : $total,
             'items'          => $items,
-            'memo'          => isset($transactionData['memo']) ? $transactionData['memo'] : null,
+            'memo'           => isset($transactionData['memo']) ? $transactionData['memo'] : null,
             'store_id'       => isset($transactionData['store_id']) ? $transactionData['store_id']
                 : config('lara-pay-ng.gateways.voguepay.store_id'),
             'recurrent'      => isset($transactionData['recurrent']) ? $transactionData['recurrent']
@@ -59,10 +56,9 @@ class VoguePay extends Helpers implements PaymentGateway {
         return $merchantRef;
     }
 
-
     /**
      * @param string $transactionId
-     * @param array $transactionData
+     * @param array  $transactionData
      * @param string $class
      * @param string $buttonTitle
      * @param string $gateway
@@ -70,19 +66,20 @@ class VoguePay extends Helpers implements PaymentGateway {
      * Render Pay Button For Particular Product
      *
      * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     *
      * @return string
      */
     public function payButton($transactionId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
-        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
     /**
      * @param $transactionId
      *
      * @return mixed|void
-     * @internal param $transactionData
      *
+     * @internal param $transactionData
      */
     public function receiveTransactionResponse($transactionId, $mertId)
     {
@@ -90,14 +87,12 @@ class VoguePay extends Helpers implements PaymentGateway {
             $queryString = [
                 'v_transaction_id' => $transactionId['transaction_id'],
                 'type'             => 'json',
-                'demo'             => 'true'
+                'demo'             => 'true',
             ];
-        }
-        else
-        {
+        } else {
             $queryString = [
                 'v_transaction_id' => $transactionId['transaction_id'],
-                'type'             => 'json'
+                'type'             => 'json',
             ];
         }
 
@@ -105,7 +100,7 @@ class VoguePay extends Helpers implements PaymentGateway {
 
         $request = $client->get('https://voguepay.com/', [
             'query'     => $queryString,
-            'headers'   =>  ['Accept' => 'application/json' ]
+            'headers'   => ['Accept' => 'application/json'],
         ]);
 
         $response = $request->getBody();
@@ -116,15 +111,11 @@ class VoguePay extends Helpers implements PaymentGateway {
 
         $result = $this->logResponse($transaction);
 
-
 //        if($transaction['total'] == 0)die('Invalid total'); // Throw Exceptions Later
 //        if($transaction['status'] != 'Approved')die('Failed transaction'); // Throw Exceptions Later
 
         return ($result);
-
-
     }
-
 
     public function logResponse($transactionData)
     {
@@ -133,30 +124,28 @@ class VoguePay extends Helpers implements PaymentGateway {
         You should query your database with the merchant reference and fetch the records you saved for this transaction.
         Then you should compare the $transaction['total'] with the total from your database.*/
 
-
         // Save Response to DB (Keep Transaction Detail)
         // Determine If the Transaction Failed Or Succeeded & Redirect As Appropriate
         // If Success, Notify User Via Email Of their Order
         // Notify Admin Of New Order
 
         $valueToUpdate = [
-            "v_transaction_id" => $transactionData["transaction_id"],
-            "v_email" => $transactionData["email"],
-            "v_total" => floatval($transactionData["total"]),
-            "memo" => $transactionData["memo"],
-            "status" => $transactionData["status"],
-            "paid_at" => $transactionData["date"],
-            "v_pay_method" => $transactionData["method"],
-            "referrer" => $transactionData["referrer"],
-            "v_total_credited" => floatval($transactionData["total_credited_to_merchant"]),
-            "v_extra_charges" => floatval($transactionData["extra_charges_by_merchant"]),
-            "v_merchant_charges" => floatval($transactionData["charges_paid_by_merchant"]),
-            "v_fund_maturity" => $transactionData["fund_maturity"],
-            "v_total_paid" => floatval($transactionData["total_paid_by_buyer"]),
-            "v_process_duration" => floatval($transactionData["process_duration"])
+            'v_transaction_id'   => $transactionData['transaction_id'],
+            'v_email'            => $transactionData['email'],
+            'v_total'            => floatval($transactionData['total']),
+            'memo'               => $transactionData['memo'],
+            'status'             => $transactionData['status'],
+            'paid_at'            => $transactionData['date'],
+            'v_pay_method'       => $transactionData['method'],
+            'referrer'           => $transactionData['referrer'],
+            'v_total_credited'   => floatval($transactionData['total_credited_to_merchant']),
+            'v_extra_charges'    => floatval($transactionData['extra_charges_by_merchant']),
+            'v_merchant_charges' => floatval($transactionData['charges_paid_by_merchant']),
+            'v_fund_maturity'    => $transactionData['fund_maturity'],
+            'v_total_paid'       => floatval($transactionData['total_paid_by_buyer']),
+            'v_process_duration' => floatval($transactionData['process_duration']),
 
         ];
-
 
         DB::table(config('lara-pay-ng.gateways.voguepay.table'))
             ->where('merchant_ref', $transactionData['merchant_ref'])
@@ -165,15 +154,12 @@ class VoguePay extends Helpers implements PaymentGateway {
         return DB::table(config('lara-pay-ng.gateways.voguepay.table'))
             ->where('merchant_ref', $transactionData['merchant_ref'])
             ->first();
-
-
     }
 
     /**
-     * Generate invoice return for Transaction
+     * Generate invoice return for Transaction.
      *
      * @param $transactionData
-     *
      */
     public function generateInvoice($transactionData)
     {
@@ -182,8 +168,6 @@ class VoguePay extends Helpers implements PaymentGateway {
         // Mail User an Invoice
         // TODO: Implement generateInvoice() method.
     }
-
-
 
     /**
      * @param $key
@@ -194,7 +178,7 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     public function config($key)
     {
-        return $this->getConfig(strtolower(self::GATEWAY),$key);
+        return $this->getConfig(strtolower(self::GATEWAY), $key);
     }
 
     /**
@@ -204,10 +188,9 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     public function serializeItemsToJson($transactionData)
     {
-        $items = [ ];
+        $items = [];
 
         foreach ($transactionData as $key => $value) {
-
             if (strpos($key, 'item_') === 0) {
                 $items[substr($key, 5)]['item'] = $value;
             }
@@ -221,17 +204,15 @@ class VoguePay extends Helpers implements PaymentGateway {
             }
         }
 
-
-        if(empty($items))
-        {
+        if (empty($items)) {
             $items = json_encode([
                 1 => [
-                    'item' => $transactionData['memo'],
-                    'price' => $transactionData['total'],
+                    'item'        => $transactionData['memo'],
+                    'price'       => $transactionData['total'],
                     'description' => isset($transactionData['description'])
                         ? $transactionData['description']
-                        : 'Billed Every ' . $transactionData['interval'] . ' days'
-                ]
+                        : 'Billed Every '.$transactionData['interval'].' days',
+                ],
             ]);
 
             return $items;
@@ -242,13 +223,11 @@ class VoguePay extends Helpers implements PaymentGateway {
         return $items;
     }
 
-
     private function sumItemPrices($transactionData)
     {
         $total = 0;
 
         foreach ($transactionData as $key => $value) {
-
             if (strpos($key, 'price_') === 0) {
                 $total += $value;
             }
@@ -256,5 +235,4 @@ class VoguePay extends Helpers implements PaymentGateway {
 
         return $total;
     }
-
 }

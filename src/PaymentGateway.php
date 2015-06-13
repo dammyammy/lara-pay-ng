@@ -1,13 +1,11 @@
 <?php
 
-
 namespace LaraPayNG;
 
-
-interface PaymentGateway {
-
+interface PaymentGateway
+{
     /**
-     * Log Transaction Before Paying So as To Persist Data
+     * Log Transaction Before Paying So as To Persist Data.
      *
      * @param $transactionData
      *
@@ -15,10 +13,9 @@ interface PaymentGateway {
      */
     public function logTransaction($transactionData);
 
-
     /**
      * @param string $productId
-     * @param array $transactionData
+     * @param array  $transactionData
      * @param string $class
      * @param $buttonTitle
      * @param string $gateway
@@ -30,14 +27,12 @@ interface PaymentGateway {
     public function payButton($productId, $transactionData, $class, $buttonTitle, $gateway);
 
     /**
-     *
      * @return mixed
      */
     public function receiveTransactionResponse($transactionData, $mertId);
 
-
     /**
-     * Log Transaction Response
+     * Log Transaction Response.
      *
      * @param $transactionData
      *
@@ -45,16 +40,14 @@ interface PaymentGateway {
      */
     public function logResponse($transactionData);
 
-
     /**
-     * Generate invoice return for Transaction
+     * Generate invoice return for Transaction.
      *
      * @param $transactionData
      *
      * @return
      */
     public function generateInvoice($transactionData);
-
 
     /**
      * @param $key
@@ -64,7 +57,6 @@ interface PaymentGateway {
      * @return mixed
      */
     public function config($key);
-
 
 //    /**
 //     * Enable sandbox API
@@ -101,5 +93,4 @@ interface PaymentGateway {
 //     * Get post backend result from API gateway
 //     */
 //    public function getBackendResult();
-
-} 
+}

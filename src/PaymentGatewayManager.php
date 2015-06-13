@@ -1,15 +1,13 @@
 <?php
 
-
 namespace LaraPayNG;
-
-use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Support\Manager;
+use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 
-class PaymentGatewayManager extends Manager {
-
+class PaymentGatewayManager extends Manager
+{
     /**
      * @var Repository
      */
@@ -51,7 +49,7 @@ class PaymentGatewayManager extends Manager {
     /**
      * Create a new driver repository with the given implementation.
      *
-     * @param  PaymentGateway $provider
+     * @param PaymentGateway $provider
      *
      * @return \LaraPayNG\GatewayRepository
      */
@@ -64,31 +62,29 @@ class PaymentGatewayManager extends Manager {
      * Get the default provider driver name.
      *
      * @throws UnknownPaymentGatewayException
+     *
      * @return string
      */
     public function getDefaultDriver()
     {
         $driver = $this->config->get('lara-pay-ng.gateways.driver');
 
-        if(in_array($driver, ['gtpay', 'webpay', 'voguepay']))
-        {
+        if (in_array($driver, ['gtpay', 'webpay', 'voguepay'])) {
             return $driver;
         }
 
-        throw new UnknownPaymentGatewayException;
-
-
+        throw new UnknownPaymentGatewayException();
     }
 
     /**
      * Set the default cache driver name.
      *
-     * @param  string  $name
+     * @param string $name
+     *
      * @return void
      */
     public function setDefaultDriver($name)
     {
         $this->config->set('lara-pay-ng.gateways.driver', $name);
     }
-
 }

@@ -24,7 +24,7 @@ return [
         | We Specified a Sensible Default, Change as Appropriate
         */
 
-        'transactionIdPrefix' => 'COMPANY-' . time() . '-PRODUCT-',
+        'transactionIdPrefix' => 'COMPANY-'.time().'-PRODUCT-',
 
         /*
         |--------------------------------------------------------------------------
@@ -34,8 +34,7 @@ return [
         |
         */
 
-        'MerchantReferencePrefix' => 'COMPANY-REF-' . time() . '-',
-
+        'MerchantReferencePrefix' => 'COMPANY-REF-'.time().'-',
 
         /*
         |--------------------------------------------------------------------------
@@ -56,7 +55,6 @@ return [
 
         ],
 
-
         /*
         |--------------------------------------------------------------------------
         | GTPay by GTBank Settings
@@ -71,17 +69,14 @@ return [
             'gtpay_tranx_curr'       => env('CURRENCY', '566'),
             'gtpay_no_show_gtbank'   => 'yes',
             'gtpay_gway_first'       => 'no', // yes or no
-            'gtpay_gway_name'       =>  null, // webpay or migs or null if no is specified gway_first
+            'gtpay_gway_name'        => null, // webpay or migs or null if no is specified gway_first
             'hashkey'                => env('GTPAY_HASH_KEY', 'Your Insanely Long HashKey from GTB'),
             'gtpay_tranx_noti_url'   => env('GTPAY_REDIRECT_URL', 'payment-notification'),
             'gatewayUrl'             => 'https://ibank.gtbank.com/GTPay/Tranx.aspx',
 
-            'table'                 => 'gtpay_transactions'
+            'table'                 => 'gtpay_transactions',
 
         ],
-
-
-
 
         /*
         |--------------------------------------------------------------------------
@@ -101,7 +96,6 @@ return [
             'table'                 => 'webpay_transactions',
         ],
 
-
         /*
         |--------------------------------------------------------------------------
         | VoguePay by VoguePay Nigeria Settings
@@ -111,19 +105,18 @@ return [
 
         'voguepay'     => [
             'v_merchant_id'     => env('VOGUEPAY_MERCHANT_ID', 'demo'),
-            'developer_code'    => env('VOGUEPAY_DEV_CODE','demo'),
+            'developer_code'    => env('VOGUEPAY_DEV_CODE', 'demo'),
             'submitButton'      => 'buynow_red.png',
-            'store_id'          => env('VOGUEPAY_STORE_ID','1'),
+            'store_id'          => env('VOGUEPAY_STORE_ID', '1'),
             'notify_url'        => env('VOGUEPAY_REDIRECT_URL', 'payment-notification'),
             'fail_url'          => env('VOGUEPAY_REDIRECT_URL', 'transaction-failed'),
             'success_url'       => env('VOGUEPAY_REDIRECT_URL', 'transaction-successful'),
-
 
             'gatewayUrl'        => 'https://voguepay.com/pay/',
 
             'table'             => 'voguepay_transactions',
 
-        ]
+        ],
 
-    ]
+    ],
 ];

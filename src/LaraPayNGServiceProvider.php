@@ -1,12 +1,12 @@
-<?php namespace LaraPayNG;
+<?php
 
+namespace LaraPayNG;
 
 use Illuminate\Foundation\AliasLoader;
-
 use Illuminate\Support\ServiceProvider;
 
-class LaraPayNGServiceProvider extends ServiceProvider {
-
+class LaraPayNGServiceProvider extends ServiceProvider
+{
     /**
      * Register the service provider.
      *
@@ -14,28 +14,23 @@ class LaraPayNGServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        $this->app['lara-pay-ng'] = $this->app->share(function($app)
-        {
+        $this->app['lara-pay-ng'] = $this->app->share(function ($app) {
             return new PaymentGatewayManager($this->app['config'], $app);
         });
 
-        $this->app['pay'] = $this->app->share(function($app)
-        {
+        $this->app['pay'] = $this->app->share(function ($app) {
             return new PaymentGatewayManager($this->app['config'], $app);
         });
 
-        $this->app['gtpay'] = $this->app->share(function($app)
-        {
+        $this->app['gtpay'] = $this->app->share(function ($app) {
             return new GTPay($this->app['config'], $app);
         });
 
-        $this->app['webpay'] = $this->app->share(function($app)
-        {
+        $this->app['webpay'] = $this->app->share(function ($app) {
             return new WebPay($this->app['config'], $app);
         });
 
-        $this->app['voguepay'] = $this->app->share(function($app)
-        {
+        $this->app['voguepay'] = $this->app->share(function ($app) {
             return new VoguePay($this->app['config'], $app);
         });
 
@@ -44,7 +39,6 @@ class LaraPayNGServiceProvider extends ServiceProvider {
         AliasLoader::getInstance()->alias('VoguePay', '\LaraPayNG\Facades\VoguePay');
         AliasLoader::getInstance()->alias('WebPay', '\LaraPayNG\Facades\WebPay');
     }
-
 
     /**
      * Bootstrap the application services.
@@ -56,29 +50,28 @@ class LaraPayNGServiceProvider extends ServiceProvider {
     public function boot()
     {
         // routes
-        if (! $this->app->routesAreCached()) {
+        if (!$this->app->routesAreCached()) {
             require __DIR__.'/resources/routes.php';
         }
 
         // views
         $this->publishes([
-            __DIR__. '/resources/views/' => base_path('/resources/views/')
+            __DIR__.'/resources/views/' => base_path('/resources/views/'),
         ], 'views');
-
 
         // config
         $this->publishes([
-            __DIR__. '/resources/lara-pay-ng.php' => config_path('lara-pay-ng.php')
+            __DIR__.'/resources/lara-pay-ng.php' => config_path('lara-pay-ng.php'),
         ], 'config');
 
         //migrations
         $this->publishes([
-            __DIR__.'/resources/migrations/' => database_path('/migrations')
+            __DIR__.'/resources/migrations/' => database_path('/migrations'),
         ], 'migrations');
 
         // controllers
         $this->publishes([
-            __DIR__. '/resources/controllers/' => base_path('app/Http/Controllers/')
+            __DIR__.'/resources/controllers/' => base_path('app/Http/Controllers/'),
         ], 'controllers');
     }
 
@@ -91,5 +84,4 @@ class LaraPayNGServiceProvider extends ServiceProvider {
     {
         return ['lara-pay-ng', 'gtpay', 'voguepay', 'webpay', 'pay'];
     }
-
 }

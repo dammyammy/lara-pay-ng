@@ -1,13 +1,14 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 //use Illuminate\Routing\Controller;
 use Illuminate\Session\Store;
-use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use LaraPayNG\PaymentGatewayManager;
 
-
-class PaymentController extends Controller {
+class PaymentController extends Controller
+{
     /**
      * @var PaymentGateway
      */
@@ -20,9 +21,9 @@ class PaymentController extends Controller {
 
     /**
      * @param PaymentGatewayManager $paymentGateway
-     * @param Store $session
+     * @param Store                 $session
      */
-    function __construct(PaymentGatewayManager $paymentGateway, Store $session)
+    public function __construct(PaymentGatewayManager $paymentGateway, Store $session)
     {
         $this->paymentGateway = $paymentGateway;
         $this->session = $session;
@@ -32,7 +33,6 @@ class PaymentController extends Controller {
      * @return \Illuminate\View\View
      *
      * Page before proceeding to checkout
-     *
      */
     public function orders()
     {
@@ -54,51 +54,44 @@ class PaymentController extends Controller {
          *   Request Object to get it in here.
          */
 
-
         // Let the array contain all Necessary Data Needed (For the Default Gateway)
         // i.e all Inputs for the PayButton
         // to log The Transaction (Saving To DB)
 
         $type = $request->get('type');
 
-        if($type == 'products')
-        {
+        if ($type == 'products') {
             $transactionData = [
-                'item_1' => 'Black Aso Oke',
-                'price_1' => 500.00,
+                'item_1'        => 'Black Aso Oke',
+                'price_1'       => 500.00,
                 'description_1' => 'That Aso Oke Mumsi Wants',
 
-                'item_2' => 'Red Aso Oke',
-                'price_2' => 730.00,
+                'item_2'        => 'Red Aso Oke',
+                'price_2'       => 730.00,
                 'description_2' => 'That Aso Oke Tosin Wants',
 
-                'item_3' => 'Silver Aso Oke',
-                'price_3' => 900.00,
+                'item_3'        => 'Silver Aso Oke',
+                'price_3'       => 900.00,
                 'description_3' => 'That Aso Oke I Want',
             ];
-
         }
 
-        if($type == 'subscription')
-        {
+        if ($type == 'subscription') {
             $transactionData = [
                 'recurrent' => true,
-                'interval' => 30,
-                'memo' => 'Membership subscription for music club',
+                'interval'  => 30,
+                'memo'      => 'Membership subscription for music club',
 
                 'total' => 13000.00,
             ];
         }
 
-
         $merchantRef = $this->paymentGateway->logTransaction($transactionData);
 
-        $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData),true);
+        $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData), true);
 
         return view('payment.confirm', compact('transactionData', 'merchantRef', 'items'));
-
     }
-
 
     public function notification($mert_id, Request $request)
     {
@@ -142,6 +135,7 @@ class PaymentController extends Controller {
      * @param Request $request
      *
      * Handle Gateway Response
+     *
      * @return mixed
      */
     private function handleTransactionResponse($mert_id, Request $request)

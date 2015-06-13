@@ -4,13 +4,12 @@ namespace LaraPayNG;
 
 use GuzzleHttp\Client;
 
-class WebPay extends Helpers implements PaymentGateway {
-
+class WebPay extends Helpers implements PaymentGateway
+{
     /**
-     * Define Gateway name
+     * Define Gateway name.
      */
     const GATEWAY = 'WebPay';
-
 
     /**
      * @param $key
@@ -21,7 +20,7 @@ class WebPay extends Helpers implements PaymentGateway {
      */
     public function config($key)
     {
-        return $this->getConfig(strtolower(self::GATEWAY),$key);
+        return $this->getConfig(strtolower(self::GATEWAY), $key);
     }
 
     /**
@@ -33,17 +32,17 @@ class WebPay extends Helpers implements PaymentGateway {
      *
      * Render Pay Button For Particular Product
      *
-     * @return string
      * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     *
+     * @return string
      */
     public function payButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
-        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
     public function sendTransactionToGateway($transactionData)
     {
-
 
 //        https://stageserv.interswitchng.com/test_paydirect/api/v1/gettransaction.json
 
@@ -67,14 +66,14 @@ class WebPay extends Helpers implements PaymentGateway {
         $client = new Client(['base_url' => 'https://stageserv.interswitchng.com']);
 
         $response = $client->get('/test_paydirect/api/v1/gettransaction.json', [
-            'query'     =>  [
+            'query'     => [
                 'product_id'  => $transactionData['productId'],
-                'amount'  => $transactionData['amount'],
-                'txn_ref' => $transactionData['id'],
-                'Hash'    => $this->helper->generateVerificationHash($transactionData['id'], self::GATEWAY ,  $transactionData['productId'])
+                'amount'      => $transactionData['amount'],
+                'txn_ref'     => $transactionData['id'],
+                'Hash'        => $this->helper->generateVerificationHash($transactionData['id'], self::GATEWAY,  $transactionData['productId']),
 
             ],
-            'headers' => ['Accept' => 'application/json' ]
+            'headers' => ['Accept' => 'application/json'],
         ]);
 
         dd($response->json());
@@ -85,16 +84,14 @@ class WebPay extends Helpers implements PaymentGateway {
         // Notify Admin Of New Order
 
 
-
         //        . $transactionData['verificatioHash']
-
 
 
 //        {"Amount":"2600","MerchantReference":"FBN|WEB|UKV|19-12-2013|037312","MertID":"17","ResponseCode":"00","ResponseDescription":"Approved by Financial Institution"}
     }
 
     /**
-     * Log Transaction
+     * Log Transaction.
      *
      * @param $transactionData
      *
@@ -106,7 +103,7 @@ class WebPay extends Helpers implements PaymentGateway {
     }
 
     /**
-     * Generate invoice return for Transaction
+     * Generate invoice return for Transaction.
      *
      * @param $transactionData
      *
@@ -118,7 +115,6 @@ class WebPay extends Helpers implements PaymentGateway {
     }
 
     /**
-     *
      * @return mixed
      */
     public function receiveTransactionResponse($transactionData, $mertId)
@@ -127,7 +123,7 @@ class WebPay extends Helpers implements PaymentGateway {
     }
 
     /**
-     * Log Transaction Response
+     * Log Transaction Response.
      *
      * @param $transactionData
      *

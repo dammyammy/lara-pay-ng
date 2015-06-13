@@ -1,12 +1,11 @@
 <?php
 
-
 namespace LaraPayNG;
 
 use Illuminate\Support\Traits\Macroable;
 
-class GatewayRepository {
-
+class GatewayRepository
+{
     use Macroable
     {
         __call as macroCall;
@@ -21,7 +20,6 @@ class GatewayRepository {
      * Create a new provider repository instance.
      *
      * @param PaymentGateway $provider
-     *
      */
     public function __construct(PaymentGateway $provider)
     {
@@ -31,21 +29,17 @@ class GatewayRepository {
     /**
      * Handle dynamic calls into macros or pass missing methods to the store.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param string $method
+     * @param array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)
     {
-        if (static::hasMacro($method))
-        {
+        if (static::hasMacro($method)) {
             return $this->macroCall($method, $parameters);
-        }
-        else
-        {
+        } else {
             return call_user_func_array([$this->provider, $method], $parameters);
         }
     }
-
-
 }
