@@ -6,17 +6,18 @@
 
 Aiming to Integrate as much Payment Gateways As Possible
  
-Gateways Currently being Looked at
+ 
+ Currently Supported
+ 
+ - VoguePay
+ 
+ 
+Gateways Currently being Looked at (In development)
 
 - GTPay
 - WebPay
 - CashEnvoy
 - SimplePay
-
-
-Currently Supported (Would be perfected soon)
-
-- VoguePay
 
 
 # To Install
@@ -236,7 +237,7 @@ Next, Test the default Controller by visiting /Orders and follow through.
         
      ```   
         
-  ##TODO
+  ## TODO
   
   - Refactor Code
   - Create a Simple Straightforward API

@@ -20,20 +20,40 @@
 
             </h5>
             <div class="pad40"></div>
+            <h4 class="text-center">Choose Your Poison</h4>
             <hr/>
-            <p>
-                You are about to Order some lovely Aso Oke's,
-                don't worry we have built up the fake order in the controller,
-                since we do not want to bundle this with a cart of some sort.
+            <div class="well col-md-5">
+                <h5><b>Subscription</b></h5>
+                <p>
+                    You are about to Order a Membership subscription for music club. Billed every 30 days.
+                    It is a recurrent bill.
 
-                Read the Controller for more details.
-            </p>
+
+                    Read the Controller for more details.
+                </p>
+                <a class="btn btn-lg btn-success" href="{{ route('checkout') . '?type=subscription' }}">
+                    Proceed to Checkout
+                </a>
+
+            </div>
+            <div class="well col-md-offset-1 col-md-6">
+                <h5><b>Products</b></h5>
+                <p>
+                    You are about to Order some lovely Aso Oke's,
+                    don't worry we have built up the fake order in the controller,
+                    since we do not want to bundle this with a cart of some sort.
+
+                    Read the Controller for more details.
+                </p>
+                <a class="btn btn-lg btn-success" href="{{ route('checkout') . '?type=products'  }}">
+                    Proceed to Checkout
+                </a>
+            </div>
+
             <hr/>
 
 
-            <a class="pull-right btn btn-lg btn-success" href="{{ route('checkout') }}">
-                Proceed to Checkout
-            </a>
+
         </div>
 
     </div>

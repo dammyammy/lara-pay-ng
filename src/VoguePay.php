@@ -33,6 +33,7 @@ class VoguePay extends Helpers implements PaymentGateway {
         $valueToInsert = [
             'total'          => isset($transactionData['total']) ? $transactionData['total']: $total,
             'items'          => $items,
+            'memo'          => isset($transactionData['memo']) ? $transactionData['memo'] : null,
             'store_id'       => isset($transactionData['store_id']) ? $transactionData['store_id']
                 : config('lara-pay-ng.gateways.voguepay.store_id'),
             'recurrent'      => isset($transactionData['recurrent']) ? $transactionData['recurrent']
@@ -218,6 +219,22 @@ class VoguePay extends Helpers implements PaymentGateway {
             if (strpos($key, 'description_') === 0) {
                 $items[substr($key, 12)]['description'] = $value;
             }
+        }
+
+
+        if(empty($items))
+        {
+            $items = json_encode([
+                1 => [
+                    'item' => $transactionData['memo'],
+                    'price' => $transactionData['total'],
+                    'description' => isset($transactionData['description'])
+                        ? $transactionData['description']
+                        : 'Billed Every ' . $transactionData['interval'] . ' days'
+                ]
+            ]);
+
+            return $items;
         }
 
         $items = json_encode($items);

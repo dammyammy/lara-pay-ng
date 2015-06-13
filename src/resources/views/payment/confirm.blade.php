@@ -16,7 +16,7 @@
 
         <div class="col-md-offset-3 col-md-6">
             @if(isset($merchantRef) && isset($transactionData) && isset($items))
-                <h5 class="text-center pad40">Your Reference No.: {!! $merchantRef !!}</h5>
+                <h5 class="text-center">Your Reference No.: {!! $merchantRef !!}</h5>
                 <div class="table-responsive">
                     <div class="pad40"></div>
 
@@ -38,18 +38,29 @@
                                 </th>
 
                                 <th  scope="row" class="">
-                                    <pre>{!! ($value['price']) !!}</pre>
+                                    <pre>{!! '&#8358; ' . number_format($value['price'], 2) !!}</pre>
                                 </th>
                                 @if(isset($value['description']))
-                                <th  scope="row" class="">
-                                    <pre>{!! ($value['description']) !!}</pre>
-                                </th>
+                                    <th  scope="row" class="">
+                                        <pre>{!! ($value['description']) !!}</pre>
+                                    </th>
                                 @else
-                                <th scope="row"><pre>N/A</pre></th>
+                                    <th scope="row"><pre>N/A</pre></th>
                                 @endif
 
                             </tr>
                         @endforeach
+
+                        <tr>
+                            <th scope="row" >Total</th>
+                            <th scope="row" >
+                                <?php $val = 0; ?>
+                                @foreach($items as $key => $value)
+                                    <?php $val += $value['price']; ?>
+                                @endforeach
+                                {!! '&#8358; ' . number_format($val,2) !!}
+                            </th>
+                        </tr>
 
                         </tbody>
                     </table>

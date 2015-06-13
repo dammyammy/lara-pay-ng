@@ -44,7 +44,7 @@ class PaymentController extends Controller {
      *
      * Final Checkout Confirmation
      */
-    public function checkout()
+    public function checkout(Request $request)
     {
 
         /*********************************************************************
@@ -59,19 +59,37 @@ class PaymentController extends Controller {
         // i.e all Inputs for the PayButton
         // to log The Transaction (Saving To DB)
 
-        $transactionData = [
-            'item_1' => 'Black Aso Oke',
-            'price_1' => 500.00,
-            'description_1' => 'That Aso Oke Mumsi Wants',
+        $type = $request->get('type');
 
-            'item_2' => 'Red Aso Oke',
-            'price_2' => 730.00,
-            'description_2' => 'That Aso Oke Tosin Wants',
+        if($type == 'products')
+        {
+            $transactionData = [
+                'item_1' => 'Black Aso Oke',
+                'price_1' => 500.00,
+                'description_1' => 'That Aso Oke Mumsi Wants',
 
-            'item_3' => 'Silver Aso Oke',
-            'price_3' => 900.00,
-            'description_3' => 'That Aso Oke I Want',
-        ];
+                'item_2' => 'Red Aso Oke',
+                'price_2' => 730.00,
+                'description_2' => 'That Aso Oke Tosin Wants',
+
+                'item_3' => 'Silver Aso Oke',
+                'price_3' => 900.00,
+                'description_3' => 'That Aso Oke I Want',
+            ];
+
+        }
+
+        if($type == 'subscription')
+        {
+            $transactionData = [
+                'recurrent' => true,
+                'interval' => 30,
+                'memo' => 'Membership subscription for music club',
+
+                'total' => 13000.00,
+            ];
+        }
+
 
         $merchantRef = $this->paymentGateway->logTransaction($transactionData);
 
