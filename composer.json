@@ -1,14 +1,24 @@
 {
     "name": "dammyammy/lara-pay-ng",
-    "description": "",
+    "description": "Payment Solution For Laravel 4/5 (Nigerian Specific Providers eg. GTPay, VoguePay, WebPay) ",
+    "keywords": ["GTPay", "VoguePay", "CashEnvoy", "Payment", "Gateway", "Nigeria"],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "http://dami.ogunmoye.com",
     "authors": [
         {
             "name": "Ogunmoye Damilola",
-            "email": "dami@ogunmoye.com"
+            "email": "dami@ogunmoye.com",
+            "homepage": "http://dami.ogunmoye.com",
+            "role": "Developer"
         }
     ],
+    "support": {
+        "source": "https://github.com/dammyammy/lara-pay-ng",
+        "issues": "https://github.com/dammyammy/lara-pay-ng/issues"
+    },
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.5.9",
         "illuminate/support": "5.1.*",
         "guzzlehttp/guzzle": "~5.0"
     },
