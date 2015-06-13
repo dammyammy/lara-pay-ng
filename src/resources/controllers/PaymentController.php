@@ -1,7 +1,8 @@
 <?php namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+//use Illuminate\Routing\Controller;
+use Illuminate\Session\Store;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use LaraPayNG\PaymentGatewayManager;
 
@@ -13,137 +14,134 @@ class PaymentController extends Controller {
     private $paymentGateway;
 
     /**
-     * @param PaymentGatewayManager $paymentGateway
+     * @var Store
      */
-    function __construct(PaymentGatewayManager $paymentGateway)
+    private $session;
+
+    /**
+     * @param PaymentGatewayManager $paymentGateway
+     * @param Store $session
+     */
+    function __construct(PaymentGatewayManager $paymentGateway, Store $session)
     {
         $this->paymentGateway = $paymentGateway;
+        $this->session = $session;
     }
 
+    /**
+     * @return \Illuminate\View\View
+     *
+     * Page before proceeding to checkout
+     *
+     */
+    public function orders()
+    {
+        return view('payment.orders');
+    }
 
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * Final Checkout Confirmation
+     */
     public function checkout()
     {
 
         /*********************************************************************
-        *   Do Whatever You normally Would To get your Products Information
-        *   An example could be to get it out of the Session Store, Via Your Cart Package or Something
-        *   Or If you are Passing It Via a Request Object, Type-Hint the Method With your
-        *   Request Object to get it in here.
-        */
+         *   Do Whatever You normally Would To get your Products Information
+         *   An example could be to get it out of the Session Store, Via Your Cart Package or Something
+         *   Or If you are Passing It Via a Request Object, Type-Hint the Method With your
+         *   Request Object to get it in here.
+         */
 
 
         // Let the array contain all Necessary Data Needed (For the Default Gateway)
         // i.e all Inputs for the PayButton
         // to log The Transaction (Saving To DB)
-        $transactionData = [];
 
+        $transactionData = [
+            'item_1' => 'Black Aso Oke',
+            'price_1' => 500.00,
+            'description_1' => 'That Aso Oke Mumsi Wants',
 
-        $transactionId = $this->paymentGateway->logTransaction($transactionData);
+            'item_2' => 'Red Aso Oke',
+            'price_2' => 730.00,
+            'description_2' => 'That Aso Oke Tosin Wants',
 
+            'item_3' => 'Silver Aso Oke',
+            'price_3' => 900.00,
+            'description_3' => 'That Aso Oke I Want',
+        ];
 
-        return redirect()->route('payment-page')
-                        ->with('transactionData', $transactionData)
-                        ->with('transactionId', $transactionId);
+        $merchantRef = $this->paymentGateway->logTransaction($transactionData);
+
+        $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData),true);
+
+        return view('payment.confirm', compact('transactionData', 'merchantRef', 'items'));
+
     }
 
 
-    public function paymentPage()
+    public function notification($mert_id, Request $request)
     {
-        $transactionData = Session::get( 'transactionData' );
-        $transactionId = Session::get( 'transactionId' );
+        $result = $this->handleTransactionResponse($mert_id, $request);
 
-        return view('payment-page', compact('transactionData', 'transactionId'));
-    }
-
-
-    public function processPayment(Request $request)
-    {
-
-        $gateway = config('lara-pay-ng.gateways.driver');
-
-        switch ($gateway)
-        {
-            case 'gtpay':
-                return $this->processGTPayTransaction($request);
-                break;
-
-            case 'webpay':
-                return $this->processWebPayTransaction($request);
-                break;
-
-            case 'voguepay':
-                return $this->processVoguePayTransaction($request);
-                break;
-
-            default:
-                throw new UnknownPaymentGatewayException;
-        }
-    }
-
-    public function notification(Request $request)
-    {
-        $data = $request->all();
-
-        return $this->paymentGateway->receiveTransactionResponse($data);
-    }
-
-    public function success()
-    {
-        return view(config('lara-pay-ng.gateways.routes.success_view_name'));
-    }
-
-    public function failed()
-    {
-        return view(config('lara-pay-ng.gateways.routes.failure_view_name'));
+        // In case you prefer a Notification Url Other than Your Success or Fail Url
     }
 
     /**
-     * @return mixed
+     * @param $mert_id
+     * @param Request $request
+     *
+     * @return \Illuminate\View\View
+     *
+     * Success Redirect Url
      */
-    private function processVoguePayTransaction(Request $request)
+    public function success($mert_id, Request $request)
     {
-        $data = $request->all();
+        $result = $this->handleTransactionResponse($mert_id, $request);
 
-        $result = $this->paymentGateway->sendTransactionToGateway($data);
-        // Compare DB Amount & Returned amount
-        // Update DB
-        // Redirect as appropriate
-        if ( $result->status == 'Approved' ) return $this->success($result);
-        if ( $result->status == 'Failed' ) return $this->failed($result);
+        return view(config('lara-pay-ng.gateways.routes.success_view_name'), compact('result'));
     }
 
     /**
-     * @return mixed
+     * @param $mert_id
+     * @param Request $request
+     *
+     * @return \Illuminate\View\View
+     *
+     * Failure Redirect Url
      */
-    private function processGTPayTransaction(Request $request)
+    public function failed($mert_id, Request $request)
     {
-        // GTPay Specific Processing
+        $result = $this->handleTransactionResponse($mert_id, $request);
 
-        $data = $request->all();
-
-//        $transactionId = $request->input('transaction_id');
-
-        $result = $this->paymentGateway->sendTransactionToGateway($data);
-        // Compare DB Amount & Returned amount
-        // Update DB
-        // Redirect as appropriate
-        if ( $result->status == 'Approved' ) return $this->success($result);
-        if ( $result->status == 'Failed' ) return $this->failed($result);
+        return view(config('lara-pay-ng.gateways.routes.failure_view_name'), compact('result'));
     }
 
     /**
+     * @param $mert_id
+     * @param Request $request
+     *
+     * Handle Gateway Response
      * @return mixed
      */
-    private function processWebPayTransaction(Request $request)
+    private function handleTransactionResponse($mert_id, Request $request)
     {
-        // WebPay Specific Processing
         $data = $request->all();
 
-        $result = $this->paymentGateway->sendTransactionToGateway($data);
-        // Compare DB Amount & Returned amount
-        // Update DB
-        // Redirect as appropriate
-        if ( $result->status == 'Approved' ) return $this->success($result);
-        if ( $result->status == 'Failed' ) return $this->failed($result);
+        $result = $this->paymentGateway->receiveTransactionResponse($data, $mert_id);
+
+        /*********************************
+         * $result contains all information regarding the transaction, This would be a perfect
+         * place to leverage Events to Do Whatever eg. Send an Invoice, Notify admin of
+         * failed transactions, confirm if total is the same so you can rest easy etc.
+         * You could do your normal Procedural Approach As Well, If You are not so comfortable with
+         * Events. To Use The Events, Uncomment the Method and its Call and write your implementation
+         *********************************/
+
+        // $this->handleNextStepsUsingEvents($result);
+
+        return $result;
     }
 }

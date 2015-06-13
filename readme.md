@@ -19,6 +19,39 @@ Currently Supported (Would be perfected soon)
 - VoguePay
 
 
+#Remember to Disallow CSRF Token Verification for your payment routes
+
+This is perhaps one of the use cases in which u need to absolutely do this.
+
+Else When a Transaction Id is been sent back Your site would throw a TokenMismatchException
+
+As the Gateway Provider is posting back, and doesn't have a token Generated from your app
+
+```
+    <?php
+    
+    namespace App\Http\Middleware;
+    
+    use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as BaseVerifier;
+    
+    class VerifyCsrfToken extends BaseVerifier
+    {
+        /**
+         * The URIs that should be excluded from CSRF verification.
+         *
+         * @var array
+         */
+        protected $except = [
+            //
+    
+            'transaction-failed/*',
+            'transaction-successful/*',
+            'payment-processing/*',
+    
+        ];
+    }
+```
+
 
 
 

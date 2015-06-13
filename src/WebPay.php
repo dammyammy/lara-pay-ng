@@ -121,7 +121,7 @@ class WebPay extends Helpers implements PaymentGateway {
      *
      * @return mixed
      */
-    public function receiveTransactionResponse($transactionData)
+    public function receiveTransactionResponse($transactionData, $mertId)
     {
         // TODO: Implement receiveTransactionResponse() method.
     }

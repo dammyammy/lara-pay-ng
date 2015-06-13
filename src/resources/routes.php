@@ -1,5 +1,16 @@
 <?php
 //
+//Route::get('orders',  [
+//    'as' => 'orders',
+//    'uses' => 'PaymentController@orders'
+//]);
+//
+//
+//Route::get('checkout',  [
+//    'as' => 'checkout',
+//    'uses' => 'PaymentController@checkout'
+//]);
+//
 //$successUrl = config('lara-pay-ng.gateways.routes.success_route');
 //$successName = config('lara-pay-ng.gateways.routes.success_route_name');
 //
@@ -7,34 +18,17 @@
 //$failureName = config('lara-pay-ng.gateways.routes.failure_route_name');
 //
 //
-//Route::get('/' . $successUrl, [
+//Route::post('/' . $successUrl . '/{mert_id}', [
 //    'as' => $successName,
 //    'uses' => 'PaymentController@success'
 //]);
 //
-////Route::get('/' . $successUrl, [
-////    'as' => $successName,
-////    'uses' => 'PaymentController@success'
-////]);
-//
-//
-//Route::get('/' . $failureUrl, [
+//Route::post('/' . $failureUrl . '/{mert_id}', [
 //    'as' => $failureName,
-//    'uses' => 'App\Http\Controllers\PaymentController@failed'
-//]);
-//
-//
-//Route::post('/payment-processing', [
-//    'as' => 'payment-processing',
-//    'uses' => 'App\Http\Controllers\PaymentController@processPayment'
+//    'uses' => 'PaymentController@failed'
 //]);
 //
 //Route::post('/payment-notification', [
 //    'as' => 'payment-notification',
-//    'uses' => 'App\Http\Controllers\PaymentController@notification'
-//]);
-
-//Route::get('/pay-now', [
-//    'as' => 'payment-page',
-//    'uses' => 'App\Http\Controllers\PaymentController@paymentPage'
+//    'uses' => 'PaymentController@notification'
 //]);

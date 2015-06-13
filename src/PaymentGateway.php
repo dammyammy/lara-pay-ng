@@ -29,23 +29,11 @@ interface PaymentGateway {
      */
     public function payButton($productId, $transactionData, $class, $buttonTitle, $gateway);
 
-
-
-    /**
-//     * @param $transactionData
-//     *
-//     *
-//     *
-//     * @return mixed
-//     */
-//    public function sendTransactionToGateway($transactionData);
-
-
     /**
      *
      * @return mixed
      */
-    public function receiveTransactionResponse($transactionData);
+    public function receiveTransactionResponse($transactionData, $mertId);
 
 
     /**

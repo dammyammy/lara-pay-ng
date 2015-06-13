@@ -7,13 +7,13 @@ use Illuminate\Support\ServiceProvider;
 
 class LaraPayNGServiceProvider extends ServiceProvider {
 
-	/**
-	 * Register the service provider.
-	 *
-	 * @return void
-	 */
-	public function register()
-	{
+    /**
+     * Register the service provider.
+     *
+     * @return void
+     */
+    public function register()
+    {
         $this->app['lara-pay-ng'] = $this->app->share(function($app)
         {
             return new PaymentGatewayManager($this->app['config'], $app);
@@ -43,7 +43,7 @@ class LaraPayNGServiceProvider extends ServiceProvider {
         AliasLoader::getInstance()->alias('Pay', '\LaraPayNG\Facades\Pay');
         AliasLoader::getInstance()->alias('VoguePay', '\LaraPayNG\Facades\VoguePay');
         AliasLoader::getInstance()->alias('WebPay', '\LaraPayNG\Facades\WebPay');
-	}
+    }
 
 
     /**
@@ -62,7 +62,7 @@ class LaraPayNGServiceProvider extends ServiceProvider {
 
         // views
         $this->publishes([
-            __DIR__. '/resources/views/' => base_path('/resources/views')
+            __DIR__. '/resources/views/' => base_path('/resources/views/')
         ], 'views');
 
 
@@ -82,14 +82,14 @@ class LaraPayNGServiceProvider extends ServiceProvider {
         ], 'controllers');
     }
 
-	/**
-	 * Get the services provided by the provider.
-	 *
-	 * @return array
-	 */
-	public function provides()
-	{
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
         return ['lara-pay-ng', 'gtpay', 'voguepay', 'webpay', 'pay'];
-	}
+    }
 
 }

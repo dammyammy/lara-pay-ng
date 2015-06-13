@@ -3,8 +3,11 @@
 
 namespace LaraPayNG;
 
+use Carbon\Carbon;
+use DB;
+
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\DB;
+
 
 class VoguePay extends Helpers implements PaymentGateway {
 
@@ -13,39 +16,46 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     const GATEWAY = 'VoguePay';
 
-
     /**
      * Log Transaction
      *
      * @param $transactionData
+     * @param null $payerId
      *
+     * @return array
      */
-    public function logTransaction($transactionData)
+    public function logTransaction($transactionData, $payerId = null)
     {
-
-//        return true;
-
         $items = $this->serializeItemsToJson($transactionData);
 
-        $transactionId = DB::table(config('lara-pay-ng.gateways.voguepay.table'))->insertGetId([
-            'transaction_id' => $transactionData['transaction_id'],
-            'merchant_ref' => $transactionData['merchant_ref'],
-            'total' => $transactionData['total'],
-            'items' => $items,
-            'store_id' => isset($transactionData['store_id']) ? $transactionData['store_id']
+        $total = $this->sumItemPrices($transactionData);
+
+        $valueToInsert = [
+            'total'          => isset($transactionData['total']) ? $transactionData['total']: $total,
+            'items'          => $items,
+            'store_id'       => isset($transactionData['store_id']) ? $transactionData['store_id']
                 : config('lara-pay-ng.gateways.voguepay.store_id'),
-            'recurrent' => isset($transactionData['recurrent']) ? $transactionData['recurrent']
+            'recurrent'      => isset($transactionData['recurrent']) ? $transactionData['recurrent']
                 : false,
-            'interval' => isset($transactionData['interval']) ? $transactionData['interval']
+            'interval'       => isset($transactionData['interval']) ? $transactionData['interval']
                 : null,
+            'payer_id'       => is_null($payerId) ? $payerId : null,
+            'created_at'     => Carbon::now(),
+            'updated_at'     => Carbon::now(),
+        ];
 
-            'payer_id' => isset($transactionData['payer_id']) ? $transactionData['payer_id']
-                : null,
-        ]);
+        $transactionId = DB::table(config('lara-pay-ng.gateways.voguepay.table'))
+            ->insertGetId($valueToInsert);
 
-        return $transactionId;
+        $merchantRef = isset($transactionData['merchant_ref'])
+            ? $transactionData['merchant_ref']
+            : $this->generateMerchantReference($transactionId);
 
+        DB::table(config('lara-pay-ng.gateways.voguepay.table'))
+            ->where('id', $transactionId)
+            ->update(['merchant_ref'  => $merchantRef]);
 
+        return $merchantRef;
     }
 
 
@@ -67,71 +77,14 @@ class VoguePay extends Helpers implements PaymentGateway {
     }
 
     /**
-     * @param $transactionData
-     *
-     * @return mixed|void
-     */
-    public function sendTransactionToGateway($transactionData)
-    {
-        $id = $this->logTransaction($transactionData);
-
-        $newdata = [];
-
-        foreach($transactionData as $key => $data)
-        {
-            if($data['gatewayUrl'] !== $data[$key])
-            {
-                $newdata[$key] = $data;
-            }
-        }
-
-        $newdata['merchant_ref'] = $id;
-
-        $client = new Client();
-
-        $response = $client->post($transactionData['gatewayUrl'], [
-            'body'     =>  $newdata,
-        ]);
-
-        dd($response);
-
-
-
-//        $response = $request->getBody();
-
-        // Save Response to DB (Keep Transaction Detail)
-        // Determine If the Transaction Failed Or Succeeded & Redirect As Appropriate
-        // If Success, Notify User Via Email Of their Order
-        // Notify Admin Of New Orders
-
-    }
-
-    /**
      * @param $transactionId
      *
      * @return mixed|void
      * @internal param $transactionData
      *
      */
-    public function receiveTransactionResponse($transactionId)
+    public function receiveTransactionResponse($transactionId, $mertId)
     {
-
-
-
-        //        $table->string('merchant_ref');
-//        $table->string('transaction_id');
-//        $table->float('total');
-//        $table->json('items');
-//        $table->string('store_id')->nullable();
-//        $table->string('recurrent')->nullable();
-//        $table->integer('interval')->nullable();
-//        $table->string('email')->nullable();
-//        $table->text('memo')->nullable();
-//        $table->float('received_total')->nullable();
-//        $table->string('referrer')->nullable();
-//        $table->string('method')->nullable();
-//        $table->timestamp('paid_at')->nullable();
-
         if (config('lara-pay-ng.gateways.voguepay.v_merchant_id') == 'demo') {
             $queryString = [
                 'v_transaction_id' => $transactionId['transaction_id'],
@@ -158,7 +111,17 @@ class VoguePay extends Helpers implements PaymentGateway {
 
         $transaction = json_decode($response, true);
 
-        $this->logResponse($transaction);
+        $transaction['merchant_ref'] = ($transaction['merchant_ref'] != '') ? $transaction['merchant_ref'] : $mertId;
+
+        $result = $this->logResponse($transaction);
+
+
+//        if($transaction['total'] == 0)die('Invalid total'); // Throw Exceptions Later
+//        if($transaction['status'] != 'Approved')die('Failed transaction'); // Throw Exceptions Later
+
+        return ($result);
+
+
     }
 
 
@@ -166,8 +129,8 @@ class VoguePay extends Helpers implements PaymentGateway {
     {
 
         /*You can do anything you want now with the transaction details or the merchant reference.
-You should query your database with the merchant reference and fetch the records you saved for this transaction.
-Then you should compare the $transaction['total'] with the total from your database.*/
+        You should query your database with the merchant reference and fetch the records you saved for this transaction.
+        Then you should compare the $transaction['total'] with the total from your database.*/
 
 
         // Save Response to DB (Keep Transaction Detail)
@@ -175,19 +138,34 @@ Then you should compare the $transaction['total'] with the total from your datab
         // If Success, Notify User Via Email Of their Order
         // Notify Admin Of New Order
 
-        //        if($transaction['total'] == 0)die('Invalid total'); // Throw Exceptions Later
-//        if($transaction['status'] != 'Approved')die('Failed transaction'); // Throw Exceptions Later
+        $valueToUpdate = [
+            "v_transaction_id" => $transactionData["transaction_id"],
+            "v_email" => $transactionData["email"],
+            "v_total" => floatval($transactionData["total"]),
+            "memo" => $transactionData["memo"],
+            "status" => $transactionData["status"],
+            "paid_at" => $transactionData["date"],
+            "v_pay_method" => $transactionData["method"],
+            "referrer" => $transactionData["referrer"],
+            "v_total_credited" => floatval($transactionData["total_credited_to_merchant"]),
+            "v_extra_charges" => floatval($transactionData["extra_charges_by_merchant"]),
+            "v_merchant_charges" => floatval($transactionData["charges_paid_by_merchant"]),
+            "v_fund_maturity" => $transactionData["fund_maturity"],
+            "v_total_paid" => floatval($transactionData["total_paid_by_buyer"]),
+            "v_process_duration" => floatval($transactionData["process_duration"])
 
-//        $transaction['merchant_id'],
-//        $transaction['transaction_id'],
-//        $transaction['email'],
-//        $transaction['total'],
-//        $transaction['merchant_ref'],
-//        $transaction['memo'],
-//        $transaction['status'],
-//        $transaction['date'],
-//        $transaction['referrer'],
-//        $transaction['method']
+        ];
+
+
+        DB::table(config('lara-pay-ng.gateways.voguepay.table'))
+            ->where('merchant_ref', $transactionData['merchant_ref'])
+            ->update($valueToUpdate);
+
+        return DB::table(config('lara-pay-ng.gateways.voguepay.table'))
+            ->where('merchant_ref', $transactionData['merchant_ref'])
+            ->first();
+
+
     }
 
     /**
@@ -198,7 +176,6 @@ Then you should compare the $transaction['total'] with the total from your datab
      */
     public function generateInvoice($transactionData)
     {
-
         // Query DB If Successful
 
         // Mail User an Invoice
@@ -224,15 +201,11 @@ Then you should compare the $transaction['total'] with the total from your datab
      *
      * @return array|string
      */
-    private function serializeItemsToJson($transactionData)
+    public function serializeItemsToJson($transactionData)
     {
         $items = [ ];
 
         foreach ($transactionData as $key => $value) {
-
-//            if (starts_with($key, ['item_','price_','description_'])) {
-//                $items[$key] = $value;
-//            }
 
             if (strpos($key, 'item_') === 0) {
                 $items[substr($key, 5)]['item'] = $value;
@@ -250,6 +223,21 @@ Then you should compare the $transaction['total'] with the total from your datab
         $items = json_encode($items);
 
         return $items;
+    }
+
+
+    private function sumItemPrices($transactionData)
+    {
+        $total = 0;
+
+        foreach ($transactionData as $key => $value) {
+
+            if (strpos($key, 'price_') === 0) {
+                $total += $value;
+            }
+        }
+
+        return $total;
     }
 
 }

@@ -109,6 +109,17 @@ class Helpers {
     }
 
     /**
+     * Generate Merchant Reference For Transaction
+     * @param $transactionId
+     *
+     * @return string
+     */
+    public function generateMerchantReference($transactionId)
+    {
+        return $this->getConfig('MerchantReferencePrefix') . $transactionId;
+    }
+
+    /**
      * @param $productId
      * @param $transactionAmount
      * @param null $payItemId
@@ -126,24 +137,24 @@ class Helpers {
         {
             case 'gtpay':
                 return hash(
-                            'sha512',
-                            $this->generateTransactionId($transactionId) . $transactionAmount .
-                            route($this->getConfig('gtpay', 'tranx_noti_url')) .
-                            $this->getConfig('gtpay', 'hashkey'),
-                            false
-                        );
+                    'sha512',
+                    $this->generateTransactionId($transactionId) . $transactionAmount .
+                    route($this->getConfig('gtpay', 'tranx_noti_url')) .
+                    $this->getConfig('gtpay', 'hashkey'),
+                    false
+                );
 
                 break;
 
             case 'webpay':
                 return hash(
-                            'sha512',
-                            $this->generateTransactionId($transactionId) . $transactionId .
-                            $payItemId . $transactionAmount .
-                            route($this->getConfig('webpay', 'site_redirect_url')) .
-                            $this->getConfig('webpay', 'hashkey'),
-                            false
-                        );
+                    'sha512',
+                    $this->generateTransactionId($transactionId) . $transactionId .
+                    $payItemId . $transactionAmount .
+                    route($this->getConfig('webpay', 'site_redirect_url')) .
+                    $this->getConfig('webpay', 'hashkey'),
+                    false
+                );
 
                 break;
 
@@ -236,6 +247,11 @@ class Helpers {
             case 'transactionIdPrefix':
                 return $this->config->get('lara-pay-ng.gateways.transactionIdPrefix');
                 break;
+
+            case 'MerchantReferencePrefix':
+                return $this->config->get('lara-pay-ng.gateways.MerchantReferencePrefix');
+                break;
+
 
             case 'webpay':
                 return $this->getGatewayConfig($gateway, $key, $keywithdot);
@@ -373,14 +389,14 @@ class Helpers {
     }
 
     /**
-     * @param string $transactionId
+     * @param $merchantRef
      * @param array $transactionData
      * @param string $class
      * @param string $buttonTitle
      *
      * @return string
      */
-    private function generateSubmitButtonForVoguePay($transactionId, $transactionData, $class, $buttonTitle)
+    private function generateSubmitButtonForVoguePay($merchantRef, $transactionData, $class, $buttonTitle)
     {
         $voguePayButtons = [
             'buynow_blue.png', 'buynow_red.png', 'buynow_green.png', 'buynow_grey.png', 'addtocart_blue.png',
@@ -401,21 +417,25 @@ class Helpers {
 
         foreach ( $transactionData as $key => $val )
         {
-
-            $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            if($key != 'merchant_ref' ) {
+                $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            }
         }
 
         foreach ( $this->getConfig('voguepay') as $key => $val )
         {
-            if(!is_null($this->getConfig('voguepay', $key)) AND $key != 'submitButton')
+            if($key == 'notify_url' OR $key == 'success_url' OR $key == 'fail_url')
+            {
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $merchantRef) . '" />' . "\n";
+            }
+
+            elseif(!is_null($this->getConfig('voguepay', $key)) AND $key != 'submitButton' AND $key != 'table')
             {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
         }
 
-        $transactionId[] = '<input type="hidden" name="merchant_ref" value="' . $this->generateTransactionId($transactionId) . '" />' . "\n";
-
-//        $token[] = '<input type="hidden" name="_token" value="' .csrf_token() .'" />' . "\n";
+        $merchantRef = '<input type="hidden" name="merchant_ref" value="' . $merchantRef . '" />' . "\n";
 
         $defaultButton = $this->getConfig('voguepay', 'submitButton');
 
@@ -427,19 +447,10 @@ class Helpers {
 
         $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
                     ' . implode('', $configs) . '
-                    ' . implode('', $transactionId) . '
+                    ' . $merchantRef . '
                     ' . implode('', $hiddens) . '
                     ' . implode('', $addition) . '
                 </form>';
-
-
-//        $form = '<form method="POST" action="' . route('payment-notification') . '" id="' . $formId . '">
-//                    ' . implode('', $token) . '
-//                    ' . implode('', $configs) . '
-//                    ' . implode('', $transactionId) . '
-//                    ' . implode('', $hiddens) . '
-//                    ' . implode('', $addition) . '
-//                </form>';
 
         return $form;
     }
