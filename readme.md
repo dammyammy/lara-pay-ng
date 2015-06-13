@@ -1,25 +1,23 @@
-# A One in all Nigerian Payment solution for Laravel 5
+# Nigerian Payment Gateway Solution for Laravel 5 
+- Supports Multiple Gateways with a single API approach, meaning Integration is the same across board in code
 
 
-*** Do Not Use, Currently been developed to be compatible with the latest version of Laravel. 
+*** Do Not Use, Currently being developed to be compatible with the latest version of Laravel. 
 
 Aiming to Integrate as much Payment Gateways As Possible
-
-TODO
-- Refactor Code
-- Create a Simple Straightforward API
-- Ability to Handle Transaction From Start to Finish
-- Back everything up with Tests.
  
 Gateways Currently being Looked at
+
+- GTPay
+- WebPay
 - CashEnvoy
 - SimplePay
 
 
 Currently Supported (Would be perfected soon)
-- GTPay
-- WebPay
+
 - VoguePay
+
 
 # To Install
 
@@ -138,7 +136,7 @@ Use the appropriate route endpoints if you did change the default names and urls
     
             'transaction-failed/*',
             'transaction-successful/*',
-            'payment-processing/*',
+            'payment-notification/*',
     
         ];
     }
@@ -238,4 +236,9 @@ Next, Test the default Controller by visiting /Orders and follow through.
         
      ```   
         
-        
+  ##TODO
+  
+  - Refactor Code
+  - Create a Simple Straightforward API
+  - Ability to Handle Transaction From Start to Finish
+  - Back everything up with Tests.  
