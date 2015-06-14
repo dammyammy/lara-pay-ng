@@ -2,10 +2,12 @@
 
 namespace LaraPayNG;
 
+use Carbon\Carbon;
+use DB;
 use GuzzleHttp\Client;
 
-class WebPay extends Helpers implements PaymentGateway {
-
+class WebPay extends Helpers implements PaymentGateway
+{
     /**
      * Define Gateway name
      */
@@ -21,7 +23,7 @@ class WebPay extends Helpers implements PaymentGateway {
      */
     public function config($key)
     {
-        return $this->getConfig(strtolower(self::GATEWAY),$key);
+        return $this->getConfig(strtolower(self::GATEWAY), $key);
     }
 
     /**
@@ -38,7 +40,7 @@ class WebPay extends Helpers implements PaymentGateway {
      */
     public function payButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
-        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
     public function sendTransactionToGateway($transactionData)
@@ -71,7 +73,7 @@ class WebPay extends Helpers implements PaymentGateway {
                 'product_id'  => $transactionData['productId'],
                 'amount'  => $transactionData['amount'],
                 'txn_ref' => $transactionData['id'],
-                'Hash'    => $this->helper->generateVerificationHash($transactionData['id'], self::GATEWAY ,  $transactionData['productId'])
+                'Hash'    => $this->helper->generateVerificationHash($transactionData['id'], self::GATEWAY,  $transactionData['productId'])
 
             ],
             'headers' => ['Accept' => 'application/json' ]

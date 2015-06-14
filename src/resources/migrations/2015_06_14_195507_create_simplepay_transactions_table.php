@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateVoguepayTransactionsTable extends Migration
+class CreateSimplepayTransactionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,7 +12,7 @@ class CreateVoguepayTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('voguepay_transactions', function (Blueprint $table) {
+        Schema::create('simplepay_transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('merchant_ref')->nullable();
             $table->string('v_transaction_id')->nullable();
@@ -50,6 +50,6 @@ class CreateVoguepayTransactionsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('voguepay_transactions');
+        Schema::drop('simplepay_transactions');
     }
 }

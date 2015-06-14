@@ -1,11 +1,9 @@
 <?php
 
-
 namespace LaraPayNG;
 
-
-interface PaymentGateway {
-
+interface PaymentGateway
+{
     /**
      * Log Transaction Before Paying So as To Persist Data
      *
@@ -101,5 +99,4 @@ interface PaymentGateway {
 //     * Get post backend result from API gateway
 //     */
 //    public function getBackendResult();
-
-} 
+}

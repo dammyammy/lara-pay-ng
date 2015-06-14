@@ -5,12 +5,10 @@ namespace LaraPayNG;
 
 use Carbon\Carbon;
 use DB;
-
 use GuzzleHttp\Client;
 
-
-class VoguePay extends Helpers implements PaymentGateway {
-
+class VoguePay extends Helpers implements PaymentGateway
+{
     /**
      * Define Gateway name
      */
@@ -74,7 +72,7 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     public function payButton($transactionId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
-        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
     /**
@@ -92,9 +90,7 @@ class VoguePay extends Helpers implements PaymentGateway {
                 'type'             => 'json',
                 'demo'             => 'true'
             ];
-        }
-        else
-        {
+        } else {
             $queryString = [
                 'v_transaction_id' => $transactionId['transaction_id'],
                 'type'             => 'json'
@@ -121,8 +117,6 @@ class VoguePay extends Helpers implements PaymentGateway {
 //        if($transaction['status'] != 'Approved')die('Failed transaction'); // Throw Exceptions Later
 
         return ($result);
-
-
     }
 
 
@@ -165,8 +159,6 @@ class VoguePay extends Helpers implements PaymentGateway {
         return DB::table(config('lara-pay-ng.gateways.voguepay.table'))
             ->where('merchant_ref', $transactionData['merchant_ref'])
             ->first();
-
-
     }
 
     /**
@@ -194,7 +186,7 @@ class VoguePay extends Helpers implements PaymentGateway {
      */
     public function config($key)
     {
-        return $this->getConfig(strtolower(self::GATEWAY),$key);
+        return $this->getConfig(strtolower(self::GATEWAY), $key);
     }
 
     /**
@@ -207,7 +199,6 @@ class VoguePay extends Helpers implements PaymentGateway {
         $items = [ ];
 
         foreach ($transactionData as $key => $value) {
-
             if (strpos($key, 'item_') === 0) {
                 $items[substr($key, 5)]['item'] = $value;
             }
@@ -222,8 +213,7 @@ class VoguePay extends Helpers implements PaymentGateway {
         }
 
 
-        if(empty($items))
-        {
+        if (empty($items)) {
             $items = json_encode([
                 1 => [
                     'item' => $transactionData['memo'],
@@ -248,7 +238,6 @@ class VoguePay extends Helpers implements PaymentGateway {
         $total = 0;
 
         foreach ($transactionData as $key => $value) {
-
             if (strpos($key, 'price_') === 0) {
                 $total += $value;
             }
@@ -256,5 +245,4 @@ class VoguePay extends Helpers implements PaymentGateway {
 
         return $total;
     }
-
 }

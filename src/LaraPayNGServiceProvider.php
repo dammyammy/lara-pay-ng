@@ -1,12 +1,10 @@
 <?php namespace LaraPayNG;
 
-
 use Illuminate\Foundation\AliasLoader;
-
 use Illuminate\Support\ServiceProvider;
 
-class LaraPayNGServiceProvider extends ServiceProvider {
-
+class LaraPayNGServiceProvider extends ServiceProvider
+{
     /**
      * Register the service provider.
      *
@@ -14,35 +12,40 @@ class LaraPayNGServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        $this->app['lara-pay-ng'] = $this->app->share(function($app)
-        {
+        $this->app['lara-pay-ng'] = $this->app->share(function ($app) {
             return new PaymentGatewayManager($this->app['config'], $app);
         });
 
-        $this->app['pay'] = $this->app->share(function($app)
-        {
+        $this->app['pay'] = $this->app->share(function ($app) {
             return new PaymentGatewayManager($this->app['config'], $app);
         });
 
-        $this->app['gtpay'] = $this->app->share(function($app)
-        {
+        $this->app['gtpay'] = $this->app->share(function ($app) {
             return new GTPay($this->app['config'], $app);
         });
 
-        $this->app['webpay'] = $this->app->share(function($app)
-        {
+        $this->app['webpay'] = $this->app->share(function ($app) {
             return new WebPay($this->app['config'], $app);
         });
 
-        $this->app['voguepay'] = $this->app->share(function($app)
-        {
+        $this->app['voguepay'] = $this->app->share(function ($app) {
             return new VoguePay($this->app['config'], $app);
+        });
+
+        $this->app['simplepay'] = $this->app->share(function ($app) {
+            return new SimplePay($this->app['config'], $app);
+        });
+
+        $this->app['cashenvoy'] = $this->app->share(function ($app) {
+            return new CashEnvoy($this->app['config'], $app);
         });
 
         AliasLoader::getInstance()->alias('GTPay', '\LaraPayNG\Facades\GTPay');
         AliasLoader::getInstance()->alias('Pay', '\LaraPayNG\Facades\Pay');
         AliasLoader::getInstance()->alias('VoguePay', '\LaraPayNG\Facades\VoguePay');
         AliasLoader::getInstance()->alias('WebPay', '\LaraPayNG\Facades\WebPay');
+        AliasLoader::getInstance()->alias('SimplePay', '\LaraPayNG\Facades\SimplePay');
+        AliasLoader::getInstance()->alias('CashEnvoy', '\LaraPayNG\Facades\CashEnvoy');
     }
 
 
@@ -89,7 +92,6 @@ class LaraPayNGServiceProvider extends ServiceProvider {
      */
     public function provides()
     {
-        return ['lara-pay-ng', 'gtpay', 'voguepay', 'webpay', 'pay'];
+        return ['lara-pay-ng', 'gtpay', 'voguepay', 'webpay', 'cashenvoy', 'simplepay', 'pay'];
     }
-
 }

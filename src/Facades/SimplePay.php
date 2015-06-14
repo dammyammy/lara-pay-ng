@@ -4,7 +4,7 @@ namespace LaraPayNG\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class GTPay extends Facade
+class SimplePay extends Facade
 {
     /**
      * Get the registered name of the component.
@@ -13,6 +13,6 @@ class GTPay extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'gtpay';
+        return 'simplepay';
     }
 }

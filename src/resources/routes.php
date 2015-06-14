@@ -32,3 +32,4 @@
 //    'as' => 'payment-notification',
 //    'uses' => 'PaymentController@notification'
 //]);
+

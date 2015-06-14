@@ -111,9 +111,9 @@ return [
 
         'voguepay'     => [
             'v_merchant_id'     => env('VOGUEPAY_MERCHANT_ID', 'demo'),
-            'developer_code'    => env('VOGUEPAY_DEV_CODE','demo'),
+            'developer_code'    => env('VOGUEPAY_DEV_CODE', 'demo'),
             'submitButton'      => 'buynow_red.png',
-            'store_id'          => env('VOGUEPAY_STORE_ID','1'),
+            'store_id'          => env('VOGUEPAY_STORE_ID', '1'),
             'notify_url'        => env('VOGUEPAY_REDIRECT_URL', 'payment-notification'),
             'fail_url'          => env('VOGUEPAY_REDIRECT_URL', 'transaction-failed'),
             'success_url'       => env('VOGUEPAY_REDIRECT_URL', 'transaction-successful'),
@@ -123,7 +123,54 @@ return [
 
             'table'             => 'voguepay_transactions',
 
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | SimplePay by SimplePay Nigeria Settings
+        |--------------------------------------------------------------------------
+        |
+        */
+
+        'simplepay'     => [
+            'v_merchant_id'     => env('SIMPLEPAY_MERCHANT_ID', 'demo'),
+            'developer_code'    => env('SIMPLEPAY_DEV_CODE', 'demo'),
+            'submitButton'      => 'buynow_red.png',
+            'store_id'          => env('SIMPLEPAY_STORE_ID', '1'),
+            'notify_url'        => env('SIMPLEPAY_REDIRECT_URL', 'payment-notification'),
+            'fail_url'          => env('SIMPLEPAY_REDIRECT_URL', 'transaction-failed'),
+            'success_url'       => env('SIMPLEPAY_REDIRECT_URL', 'transaction-successful'),
+
+
+            'gatewayUrl'        => 'https://simplepay.com/pay/',
+
+            'table'             => 'simplepay_transactions',
+
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | CashEnvoy by CashEnvoy Nigeria Settings
+        |--------------------------------------------------------------------------
+        |
+        */
+
+        'cashenvoy'     => [
+            'v_merchant_id'     => env('CASHENVOY_MERCHANT_ID', 'demo'),
+            'developer_code'    => env('CASHENVOY_DEV_CODE', 'demo'),
+            'submitButton'      => 'buynow_red.png',
+            'store_id'          => env('CASHENVOY_STORE_ID', '1'),
+            'notify_url'        => env('CASHENVOY_REDIRECT_URL', 'payment-notification'),
+            'fail_url'          => env('CASHENVOY_REDIRECT_URL', 'transaction-failed'),
+            'success_url'       => env('CASHENVOY_REDIRECT_URL', 'transaction-successful'),
+
+
+            'gatewayUrl'        => 'https://cashenvoy.com/pay/',
+
+            'table'             => 'cashenvoy_transactions',
+
         ]
+
 
     ]
 ];

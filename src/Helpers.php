@@ -6,12 +6,10 @@ namespace LaraPayNG;
 use LaraPayNG\Exceptions\UnspecifiedPayItemIdException;
 use LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-
 use Illuminate\Contracts\Config\Repository as Config;
 
-
-class Helpers {
-
+class Helpers
+{
     /**
      * @var Repository
      */
@@ -40,7 +38,7 @@ class Helpers {
     {
         $gateway = $this->getConfig('driver');
 
-        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
     /**
@@ -68,11 +66,9 @@ class Helpers {
      *
      * @return string HTML
      */
-    protected  function generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway)
+    protected function generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway)
     {
-
-        switch (strtolower($gateway))
-        {
+        switch (strtolower($gateway)) {
             case 'gtpay':
                 return $this->generateSubmitButtonForGTPay($transactionId, $transactionData, $class, $buttonTitle);
 
@@ -133,8 +129,7 @@ class Helpers {
      */
     public function generateTransactionHash($transactionId, $transactionAmount, $gateway = 'gtpay', $payItemId = null)
     {
-        switch ($gateway)
-        {
+        switch ($gateway) {
             case 'gtpay':
                 return hash(
                     'sha512',
@@ -166,16 +161,14 @@ class Helpers {
                 throw new UnknownPaymentGatewayException;
                 break;
         }
-
     }
 
 
 
     public function generateVerificationHash($tranx_id, $gateway = 'gtpay', $product_id = '4220')
     {
-        if ($gateway == 'webpay')
-        {
-//     productid, transactionreference and your hash key
+        if ($gateway == 'webpay') {
+            //     productid, transactionreference and your hash key
 //       $product_id = substr($tranx_id, strpos($tranx_id, 'D') + 1);
 
             return hash('sha512', $product_id . $tranx_id . $this->getConfig('webpay', 'hashkey'), false);
@@ -193,9 +186,7 @@ class Helpers {
      */
     protected function determineGatewayUrl($driver)
     {
-
-        switch ( $driver )
-        {
+        switch ($driver) {
             case 'gtpay':
                 $gatewayUrl = $this->getConfig('gtpay', 'gatewayUrl');
                 break;
@@ -238,8 +229,7 @@ class Helpers {
     {
         $keywithdot = '.' . $key;
 
-        switch ( $gateway )
-        {
+        switch ($gateway) {
             case 'driver':
                 return $this->config->get('lara-pay-ng.gateways.driver');
                 break;
@@ -269,7 +259,6 @@ class Helpers {
                 return 'Unknown Config Variable Requested!!';
                 break;
         }
-
     }
 
     /**
@@ -290,24 +279,23 @@ class Helpers {
 
         $hiddens = [ ];
         $addition = [ ];
-        foreach ( $transactionData as $key => $val )
-        {
+        foreach ($transactionData as $key => $val) {
             $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
         }
 
-        foreach ( $this->getConfig('gtpay') as $key => $val )
-        {
-            if(!is_null($this->getConfig('gtpay', $key)) AND $key != 'gatewayUrl' AND $key != 'hashkey'
-                AND $key != 'success_url' AND $key != 'fail_url'
-            )
-            {
+        foreach ($this->getConfig('gtpay') as $key => $val) {
+            if (!is_null($this->getConfig('gtpay', $key)) and $key != 'gatewayUrl' and $key != 'hashkey'
+                and $key != 'success_url' and $key != 'fail_url'
+            ) {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
         }
 
         $transactionId[] = '<input type="hidden" name="gtpay_tranx_id" value="' . $this->generateTransactionId($transactionId) . '" />' . "\n";
 
-        if (! isset($transactionData['gtpay_tranx_amt'])) throw new UnspecifiedTransactionAmountException;
+        if (! isset($transactionData['gtpay_tranx_amt'])) {
+            throw new UnspecifiedTransactionAmountException;
+        }
 
         $hash = '<input type="hidden" name="gtpay_tranx_hash" value="' . $this->generateTransactionHash($transactionId, $transactionData['gtpay_tranx_amt'], $gateway = 'gtpay') . '" />' . "\n";
 
@@ -340,22 +328,18 @@ class Helpers {
      */
     private function generateSubmitButtonForWebPay($transactionId, $transactionData, $class, $buttonTitle)
     {
-
         $formId = 'PayViaWebPay';
 
         $gatewayUrl = $this->getConfig('webpay', 'gatewayUrl') . '/pay';
 
         $hiddens = [ ];
         $addition = [ ];
-        foreach ( $transactionData as $key => $val )
-        {
+        foreach ($transactionData as $key => $val) {
             $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
         }
 
-        foreach ( $this->getConfig('webpay') as $key => $val )
-        {
-            if(!is_null($this->getConfig('webpay', $key)) AND $key != 'gatewayUrl' AND $key != 'hashkey')
-            {
+        foreach ($this->getConfig('webpay') as $key => $val) {
+            if (!is_null($this->getConfig('webpay', $key)) and $key != 'gatewayUrl' and $key != 'hashkey') {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
         }
@@ -363,8 +347,12 @@ class Helpers {
         $transactionId[] = '<input type="hidden" name="txn_ref" value="' . $this->generateTransactionId($transactionId) . '" />' . "\n";
         $transactionId = '<input type="hidden" name="product_id" value="' . $transactionId . '" />' . "\n";
 
-        if (! isset($transactionData['amount'])) throw new UnspecifiedTransactionAmountException;
-        if (! isset($transactionData['pay_item_id'])) throw new UnspecifiedPayItemIdException;
+        if (! isset($transactionData['amount'])) {
+            throw new UnspecifiedTransactionAmountException;
+        }
+        if (! isset($transactionData['pay_item_id'])) {
+            throw new UnspecifiedPayItemIdException;
+        }
 
         $hash = '<input type="hidden" name="hash" value="' . $this->generateTransactionHash($transactionId, $transactionData['amount'], 'webpay', $transactionData['pay_item_id']) . '" />' . "\n";
 
@@ -384,8 +372,6 @@ class Helpers {
         ';
 
         return $form;
-
-
     }
 
     /**
@@ -415,22 +401,16 @@ class Helpers {
         $configs = [ ];
         $addition = [ ];
 
-        foreach ( $transactionData as $key => $val )
-        {
-            if($key != 'merchant_ref' ) {
+        foreach ($transactionData as $key => $val) {
+            if ($key != 'merchant_ref') {
                 $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
         }
 
-        foreach ( $this->getConfig('voguepay') as $key => $val )
-        {
-            if($key == 'notify_url' OR $key == 'success_url' OR $key == 'fail_url')
-            {
+        foreach ($this->getConfig('voguepay') as $key => $val) {
+            if ($key == 'notify_url' or $key == 'success_url' or $key == 'fail_url') {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $merchantRef) . '" />' . "\n";
-            }
-
-            elseif(!is_null($this->getConfig('voguepay', $key)) AND $key != 'submitButton' AND $key != 'table')
-            {
+            } elseif (!is_null($this->getConfig('voguepay', $key)) and $key != 'submitButton' and $key != 'table') {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
         }
@@ -464,14 +444,14 @@ class Helpers {
      */
     private function getGatewayConfig($gateway, $key, $keywithdot)
     {
-        if ( $key == '*' ) return $this->config->get('lara-pay-ng.gateways.' . $gateway);
+        if ($key == '*') {
+            return $this->config->get('lara-pay-ng.gateways.' . $gateway);
+        }
 
-        if ( ! array_key_exists($key, $this->config->get('lara-pay-ng.gateways.' . $gateway)) )
+        if (! array_key_exists($key, $this->config->get('lara-pay-ng.gateways.' . $gateway))) {
             return 'Trying to get an Unknown ' . $gateway . ' Config';
+        }
 
         return $this->config->get('lara-pay-ng.gateways.'. $gateway . $keywithdot);
-
     }
-
-
-} 
+}

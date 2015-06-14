@@ -1,15 +1,13 @@
 <?php
 
-
 namespace LaraPayNG;
 
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Support\Manager;
 
-class PaymentGatewayManager extends Manager {
-
+class PaymentGatewayManager extends Manager
+{
     /**
      * @var Repository
      */
@@ -49,6 +47,26 @@ class PaymentGatewayManager extends Manager {
     }
 
     /**
+     * Create an instance of the SimplePay  API driver.
+     *
+     * @return SimplePay
+     */
+    public function createSimplePayDriver()
+    {
+        return $this->repository(new SimplePay($this->config));
+    }
+
+    /**
+     * Create an instance of the CashEnvoy  API driver.
+     *
+     * @return CashEnvoy
+     */
+    public function createCashEnvoyDriver()
+    {
+        return $this->repository(new CashEnvoy($this->config));
+    }
+
+    /**
      * Create a new driver repository with the given implementation.
      *
      * @param  PaymentGateway $provider
@@ -70,14 +88,11 @@ class PaymentGatewayManager extends Manager {
     {
         $driver = $this->config->get('lara-pay-ng.gateways.driver');
 
-        if(in_array($driver, ['gtpay', 'webpay', 'voguepay']))
-        {
+        if (in_array($driver, ['gtpay', 'webpay', 'voguepay', 'simplepay', 'cashenvoy'])) {
             return $driver;
         }
 
         throw new UnknownPaymentGatewayException;
-
-
     }
 
     /**
@@ -90,5 +105,4 @@ class PaymentGatewayManager extends Manager {
     {
         $this->config->set('lara-pay-ng.gateways.driver', $name);
     }
-
 }

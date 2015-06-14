@@ -3,10 +3,12 @@
 
 namespace LaraPayNG;
 
+use Carbon\Carbon;
+use DB;
 use GuzzleHttp\Client;
 
-class GTPay extends Helpers implements PaymentGateway {
-
+class GTPay extends Helpers implements PaymentGateway
+{
     /**
      * Define Gateway name
      */
@@ -22,7 +24,7 @@ class GTPay extends Helpers implements PaymentGateway {
      */
     public function config($key)
     {
-        return $this->getConfig(strtolower(self::GATEWAY),$key);
+        return $this->getConfig(strtolower(self::GATEWAY), $key);
     }
 
     /**
@@ -39,7 +41,7 @@ class GTPay extends Helpers implements PaymentGateway {
      */
     public function payButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
-        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway );
+        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
 

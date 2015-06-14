@@ -6,8 +6,8 @@ use Illuminate\Session\Store;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use LaraPayNG\PaymentGatewayManager;
 
-
-class PaymentController extends Controller {
+class PaymentController extends Controller
+{
     /**
      * @var PaymentGateway
      */
@@ -22,7 +22,7 @@ class PaymentController extends Controller {
      * @param PaymentGatewayManager $paymentGateway
      * @param Store $session
      */
-    function __construct(PaymentGatewayManager $paymentGateway, Store $session)
+    public function __construct(PaymentGatewayManager $paymentGateway, Store $session)
     {
         $this->paymentGateway = $paymentGateway;
         $this->session = $session;
@@ -61,8 +61,7 @@ class PaymentController extends Controller {
 
         $type = $request->get('type');
 
-        if($type == 'products')
-        {
+        if ($type == 'products') {
             $transactionData = [
                 'item_1' => 'Black Aso Oke',
                 'price_1' => 500.00,
@@ -76,11 +75,9 @@ class PaymentController extends Controller {
                 'price_3' => 900.00,
                 'description_3' => 'That Aso Oke I Want',
             ];
-
         }
 
-        if($type == 'subscription')
-        {
+        if ($type == 'subscription') {
             $transactionData = [
                 'recurrent' => true,
                 'interval' => 30,
@@ -93,10 +90,9 @@ class PaymentController extends Controller {
 
         $merchantRef = $this->paymentGateway->logTransaction($transactionData);
 
-        $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData),true);
+        $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData), true);
 
         return view('payment.confirm', compact('transactionData', 'merchantRef', 'items'));
-
     }
 
 

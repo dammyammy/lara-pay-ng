@@ -3,7 +3,6 @@
 
 namespace LaraPayNG\Exceptions;
 
-
-class UnspecifiedTransactionAmountException  extends \Exception {
-
-} 
+class UnspecifiedTransactionAmountException  extends \Exception
+{
+}

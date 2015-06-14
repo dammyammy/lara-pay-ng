@@ -3,16 +3,16 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGtpayTransactionsTable extends Migration {
-
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		//
+class CreateGtpayTransactionsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        //
 //        create_table :spree_gtpay_transactions do |t|
 //        t.references :order
 //          t.string :gtpay_tranx_id
@@ -29,17 +29,15 @@ class CreateGtpayTransactionsTable extends Migration {
 //        add_index :spree_gtpay_transactions, :user_id
 //        add_index :spree_gtpay_transactions, :status
 //      end
+    }
 
-	}
-
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
-		//
-	}
-
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        //
+    }
 }
