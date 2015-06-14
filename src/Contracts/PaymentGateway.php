@@ -1,6 +1,6 @@
 <?php
 
-namespace LaraPayNG;
+namespace LaraPayNG\Contracts;
 
 interface PaymentGateway
 {
@@ -45,16 +45,6 @@ interface PaymentGateway
 
 
     /**
-     * Generate invoice return for Transaction
-     *
-     * @param $transactionData
-     *
-     * @return
-     */
-    public function generateInvoice($transactionData);
-
-
-    /**
      * @param $key
      *
      * Retrieve A Config Key From Default Gateway Array
@@ -63,6 +53,15 @@ interface PaymentGateway
      */
     public function config($key);
 
+
+//    /**
+//     * Generate invoice return for Transaction
+//     *
+//     * @param $transactionData
+//     *
+//     * @return
+//     */
+//    public function generateInvoice($transactionData);
 
 //    /**
 //     * Enable sandbox API

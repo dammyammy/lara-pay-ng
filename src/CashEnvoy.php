@@ -6,9 +6,13 @@ namespace LaraPayNG;
 use Carbon\Carbon;
 use DB;
 use GuzzleHttp\Client;
+use LaraPayNG\Contracts\PaymentGateway;
+use LaraPayNG\Traits\CanGenerateInvoice;
 
 class CashEnvoy  extends Helpers implements PaymentGateway
 {
+    use CanGenerateInvoice;
+
     /**
      * Define Gateway name
      */
@@ -45,17 +49,5 @@ class CashEnvoy  extends Helpers implements PaymentGateway
     public function logResponse($transactionData)
     {
         // TODO: Implement logResponse() method.
-    }
-
-    /**
-     * Generate invoice return for Transaction
-     *
-     * @param $transactionData
-     *
-     * @return
-     */
-    public function generateInvoice($transactionData)
-    {
-        // TODO: Implement generateInvoice() method.
     }
 }

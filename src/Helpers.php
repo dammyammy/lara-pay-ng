@@ -84,6 +84,18 @@ class Helpers
 
                 break;
 
+            case 'simplepay':
+                return $this->generateSubmitButtonForSimplePay($transactionId, $transactionData, $class, $buttonTitle);
+
+                break;
+
+            case 'cashenvoy':
+                return $this->generateSubmitButtonForCashEnvoy($transactionId, $transactionData, $class, $buttonTitle);
+
+                break;
+
+
+
             default:
                 throw new UnknownPaymentGatewayException;
 
@@ -199,6 +211,14 @@ class Helpers
                 $gatewayUrl = $this->getConfig('voguepay', 'gatewayUrl');
                 break;
 
+            case 'simplepay':
+                $gatewayUrl = $this->getConfig('simplepay', 'gatewayUrl');
+                break;
+
+            case 'cashenvoy':
+                $gatewayUrl = $this->getConfig('cashenvoy', 'gatewayUrl');
+                break;
+
             case 'default':
                 throw new UnknownPaymentGatewayException;
                 break;
@@ -252,6 +272,14 @@ class Helpers
                 break;
 
             case 'gtpay':
+                return $this->getGatewayConfig($gateway, $key, $keywithdot);
+                break;
+
+            case 'simplepay':
+                return $this->getGatewayConfig($gateway, $key, $keywithdot);
+                break;
+
+            case 'cashenvoy':
                 return $this->getGatewayConfig($gateway, $key, $keywithdot);
                 break;
 
@@ -434,6 +462,65 @@ class Helpers
 
         return $form;
     }
+
+
+    /**
+     * @param $merchantRef
+     * @param array $transactionData
+     * @param string $class
+     * @param string $buttonTitle
+     *
+     * @return string
+     */
+    private function generateSubmitButtonForSimplePay($merchantRef, $transactionData, $class, $buttonTitle)
+    {
+        $simplePayButtons = [
+            'simplepaylogoescrow.gif', 'simplepaylogo.gif', 'simplepaysubscribe.gif',
+            'spaccepted.png', 'simplepaydonatenow.gif',
+        ];
+
+        $formId = 'PayViaSimplePay';
+
+        $gatewayUrl = $this->getConfig('simplepay', 'gatewayUrl');
+
+        $hiddens = [ ];
+        $configs = [ ];
+        $addition = [ ];
+
+        foreach ($transactionData as $key => $val) {
+            if ($key != 'member') {
+                $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            }
+        }
+
+        foreach ($this->getConfig('simplepay') as $key => $val) {
+            if ($key == 'notify_url' or $key == 'success_url' or $key == 'fail_url') {
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $merchantRef) . '" />' . "\n";
+            } elseif (!is_null($this->getConfig('simplepay', $key)) and $key != 'submitButton' and $key != 'table') {
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            }
+        }
+
+        $merchantRef = '<input type="hidden" name="member" value="' . $merchantRef . '" />' . "\n";
+
+        $defaultButton = $this->getConfig('simplepay', 'submitButton');
+
+        $addition[] = in_array($defaultButton, $simplePayButtons)
+            ? '<input type="image"  src="https://simplepay4u.com/hlib/images/client_img/' .
+            $defaultButton . '" alt="Submit">'
+
+            : '<input type="submit"  class="' . $class . '">' . $buttonTitle . '</input>';
+
+        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
+                    ' . implode('', $configs) . '
+                    ' . $merchantRef . '
+                    ' . implode('', $hiddens) . '
+                    ' . implode('', $addition) . '
+                </form>';
+
+        return $form;
+    }
+
 
     /**
      * @param $gateway

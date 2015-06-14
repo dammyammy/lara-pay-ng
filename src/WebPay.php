@@ -5,9 +5,13 @@ namespace LaraPayNG;
 use Carbon\Carbon;
 use DB;
 use GuzzleHttp\Client;
+use LaraPayNG\Contracts\PaymentGateway;
+use LaraPayNG\Traits\CanGenerateInvoice;
 
 class WebPay extends Helpers implements PaymentGateway
 {
+    use CanGenerateInvoice;
+
     /**
      * Define Gateway name
      */
@@ -105,18 +109,6 @@ class WebPay extends Helpers implements PaymentGateway
     public function logTransaction($transactionData)
     {
         // TODO: Implement logTransaction() method.
-    }
-
-    /**
-     * Generate invoice return for Transaction
-     *
-     * @param $transactionData
-     *
-     * @return
-     */
-    public function generateInvoice($transactionData)
-    {
-        // TODO: Implement generateInvoice() method.
     }
 
     /**

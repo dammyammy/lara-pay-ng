@@ -1,7 +1,13 @@
-<?php namespace LaraPayNG;
+<?php namespace LaraPayNG\Providers;
 
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
+use LaraPayNG\CashEnvoy;
+use LaraPayNG\GTPay;
+use LaraPayNG\Managers\PaymentGatewayManager;
+use LaraPayNG\SimplePay;
+use LaraPayNG\VoguePay;
+use LaraPayNG\WebPay;
 
 class LaraPayNGServiceProvider extends ServiceProvider
 {
@@ -60,7 +66,7 @@ class LaraPayNGServiceProvider extends ServiceProvider
     {
         // routes
         if (! $this->app->routesAreCached()) {
-            require __DIR__.'/resources/routes.php';
+            require __DIR__ . '/resources/routes.php';
         }
 
         // views

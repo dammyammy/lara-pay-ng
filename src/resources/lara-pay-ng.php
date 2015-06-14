@@ -63,7 +63,7 @@ return [
         |--------------------------------------------------------------------------
         | https://ibank.gtbank.com/GTPay/Test/mman-tech.html
         | https://ibank.gtbank.com/GTPay/Test/TestMerchant.aspx
-        | Change to for Testing https://gtweb.gtbank.com/GTPay/Tranx.aspx
+        | Change to https://gtweb.gtbank.com/GTPay/Tranx.aspx  for Testing
         */
 
         'gtpay'     => [
@@ -129,20 +129,19 @@ return [
         |--------------------------------------------------------------------------
         | SimplePay by SimplePay Nigeria Settings
         |--------------------------------------------------------------------------
-        |
+        | Change GatewayUrl to https://simplepay4u.com/process.php for Production
         */
 
         'simplepay'     => [
-            'v_merchant_id'     => env('SIMPLEPAY_MERCHANT_ID', 'demo'),
-            'developer_code'    => env('SIMPLEPAY_DEV_CODE', 'demo'),
-            'submitButton'      => 'buynow_red.png',
-            'store_id'          => env('SIMPLEPAY_STORE_ID', '1'),
-            'notify_url'        => env('SIMPLEPAY_REDIRECT_URL', 'payment-notification'),
-            'fail_url'          => env('SIMPLEPAY_REDIRECT_URL', 'transaction-failed'),
-            'success_url'       => env('SIMPLEPAY_REDIRECT_URL', 'transaction-successful'),
+            'member'            => env('SIMPLEPAY_MERCHANT_ID', 'demo'),
+            'site_logo'         => env('SIMPLEPAY_LOGO_URL', 'http://placehold.it/300/300.png'),
+            'submitButton'      => 'simplepaylogo.gif',
+            'CMAccountid'       => env('SIMPLEPAY_COMMISION_ID', null),
+            'unotify'           => env('SIMPLEPAY_REDIRECT_URL', 'payment-notification'),
+            'ucancel'           => env('SIMPLEPAY_REDIRECT_URL', 'transaction-failed'),
+            'ureturn'           => env('SIMPLEPAY_REDIRECT_URL', 'transaction-successful'),
 
-
-            'gatewayUrl'        => 'https://simplepay.com/pay/',
+            'gatewayUrl'        => 'http://sandbox.simplepay4u.com/process.php',
 
             'table'             => 'simplepay_transactions',
 

@@ -1,9 +1,10 @@
 <?php
 
 
-namespace LaraPayNG;
+namespace LaraPayNG\Repositories;
 
 use Illuminate\Support\Traits\Macroable;
+use LaraPayNG\Contracts\PaymentGateway;
 
 class GatewayRepository
 {

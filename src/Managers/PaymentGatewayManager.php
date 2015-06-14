@@ -1,10 +1,16 @@
 <?php
 
-namespace LaraPayNG;
+namespace LaraPayNG\Managers;
 
+use LaraPayNG\CashEnvoy;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Support\Manager;
+use LaraPayNG\GTPay;
+use LaraPayNG\Repositories\GatewayRepository;
+use LaraPayNG\SimplePay;
+use LaraPayNG\VoguePay;
+use LaraPayNG\WebPay;
 
 class PaymentGatewayManager extends Manager
 {
