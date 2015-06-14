@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 //use Illuminate\Routing\Controller;
 use Illuminate\Session\Store;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-use LaraPayNG\PaymentGatewayManager;
+use LaraPayNG\Managers\PaymentGatewayManager;
 
 class PaymentController extends Controller
 {
