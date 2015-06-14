@@ -66,28 +66,28 @@ class LaraPayNGServiceProvider extends ServiceProvider
     {
         // routes
         if (! $this->app->routesAreCached()) {
-            require __DIR__ . '/resources/routes.php';
+            require __DIR__ . '/../resources/routes.php';
         }
 
         // views
         $this->publishes([
-            __DIR__. '/resources/views/' => base_path('/resources/views/')
+            __DIR__. '/../resources/views/' => base_path('/resources/views/')
         ], 'views');
 
 
         // config
         $this->publishes([
-            __DIR__. '/resources/lara-pay-ng.php' => config_path('lara-pay-ng.php')
+            __DIR__. '/../resources/lara-pay-ng.php' => config_path('lara-pay-ng.php')
         ], 'config');
 
         //migrations
         $this->publishes([
-            __DIR__.'/resources/migrations/' => database_path('/migrations')
+            __DIR__.'/../resources/migrations/' => database_path('/migrations')
         ], 'migrations');
 
         // controllers
         $this->publishes([
-            __DIR__. '/resources/controllers/' => base_path('app/Http/Controllers/')
+            __DIR__. '/../resources/controllers/' => base_path('app/Http/Controllers/')
         ], 'controllers');
     }
 
