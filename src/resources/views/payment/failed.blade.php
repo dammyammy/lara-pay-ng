@@ -16,13 +16,17 @@
 
         <div class="col-md-offset-3 col-md-6">
             <h5 class="text-center">
-               <i class="fa fa-exclamation-triangle fa-2x text-danger"></i> Transaction Unsuccessful
+                <i class="fa fa-exclamation-triangle fa-2x text-danger"></i> Transaction Unsuccessful
 
             </h5>
             <div class="pad40"></div>
 
-            <p><b>Transaction Reference:</b> {!! $result->v_transaction_id !!}</p>
-            <p><b>Transaction Status:</b> {!! $result->status !!}</p>
+            <p><b>Transaction Reference:</b> {!! $result['transaction_id'] !!}</p>
+            <p><b>Merchant Reference:</b> {!! $result['merchant_ref'] !!}</p>
+            <p><b>Transaction Status:</b> {!! $result['status'] !!}</p>
+            <p><b>Amount Paid:</b> {!! $result['amount'] !!}</p>
+            <p><b>Paid by:</b> {!! $result['customer_id'] !!}</p>
+
 
             <hr/>
             <p>

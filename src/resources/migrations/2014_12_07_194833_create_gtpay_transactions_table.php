@@ -3,8 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGtpayTransactionsTable extends Migration
-{
+class CreateGtpayTransactionsTable extends Migration {
+
     /**
      * Run the migrations.
      *
@@ -12,23 +12,29 @@ class CreateGtpayTransactionsTable extends Migration
      */
     public function up()
     {
-        //
-//        create_table :spree_gtpay_transactions do |t|
-//        t.references :order
-//          t.string :gtpay_tranx_id
-//          t.decimal :gtpay_tranx_amount, :precision => 8, :scale => 2
-//          t.string :gtpay_tranx_currency
-//          t.integer :user_id
-//          t.string :gtpay_tranx_status_code
-//          t.string :gtpay_tranx_memo
-//          t.string :gtpay_tranx_status_msg
-//          t.string :status
-//          t.timestamps
-//        end
-//        add_index :spree_gtpay_transactions, :gtpay_tranx_id
-//        add_index :spree_gtpay_transactions, :user_id
-//        add_index :spree_gtpay_transactions, :status
-//      end
+        Schema::create('gtpay_transactions', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('gtpay_tranx_id')->nullable()->unique();
+            $table->string('r_gtpay_tranx_id')->nullable();
+            $table->string('gtpay_merchant_ref')->nullable();
+            $table->float('gtpay_tranx_amt', 15, 4)->nullable();
+            $table->string('gtpay_tranx_curr')->nullable();
+            $table->string('gtpay_cust_id')->nullable();
+            $table->string('gtpay_echo_data')->nullable();
+            $table->text('gtpay_cust_name')->nullable();
+            $table->float('r_gtpay_amount', 15, 4)->nullable();
+            $table->json('items');
+            $table->text('gtpay_tranx_memo')->nullable();
+            $table->string('gtpay_response_code')->nullable();
+            $table->string('gtpay_response_description')->default('Pending');
+            $table->string('gtpay_tranx_status_code')->nullable();
+            $table->string('gtpay_tranx_status_msg')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->engine = 'InnoDB';
+
+        });
     }
 
     /**
@@ -38,6 +44,7 @@ class CreateGtpayTransactionsTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('gtpay_transactions');
     }
+
 }

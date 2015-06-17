@@ -23,7 +23,7 @@
             <h4 class="text-center">Choose Your Poison</h4>
             <hr/>
             <div class="well col-md-5">
-                <h5><b>Subscription</b></h5>
+                <h5><b>Pay for Subscription</b></h5>
                 <p>
                     You are about to Order a Membership subscription for music club. Billed every 30 days.
                     It is a recurrent bill.
@@ -37,7 +37,7 @@
 
             </div>
             <div class="well col-md-offset-1 col-md-6">
-                <h5><b>Products</b></h5>
+                <h5><b>Pay for Products</b></h5>
                 <p>
                     You are about to Order some lovely Aso Oke's,
                     don't worry we have built up the fake order in the controller,

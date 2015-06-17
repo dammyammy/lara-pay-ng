@@ -52,6 +52,16 @@ class Helpers
     }
 
     /**
+     * @param float $amount
+     *
+     * @return string
+     */
+    public function inDollars($amount)
+    {
+        return '$ ' . number_format($amount, 2);
+    }
+
+    /**
      * Building HTML Form
      *
      * Gateways use this method to build hidden form for product Buy Button.
@@ -128,25 +138,28 @@ class Helpers
     }
 
     /**
-     * @param $productId
+     * @param $transactionId
      * @param $transactionAmount
-     * @param null $payItemId
      * @param string $gateway
      *
      * GTPay:  gtpay_tranx_id + gtpay_tranx_amt + gtpay_tranx_noti_url + hashkey
      * WebPay: tnx_ref + product_id + pay_item_id + amount + site_redirect_url + <the provided MAC key>
      *
-     * @throws UnknownPaymentGatewayException
+     * @param null $payItemId
+     *
      * @return string
+     * @throws UnknownPaymentGatewayException
+     * @internal param $productId
      */
     public function generateTransactionHash($transactionId, $transactionAmount, $gateway = 'gtpay', $payItemId = null)
     {
+
         switch ($gateway) {
             case 'gtpay':
                 return hash(
                     'sha512',
-                    $this->generateTransactionId($transactionId) . $transactionAmount .
-                    route($this->getConfig('gtpay', 'tranx_noti_url')) .
+                    $transactionId . $transactionAmount .
+                    route($this->getConfig('gtpay', 'gtpay_tranx_noti_url')) .
                     $this->getConfig('gtpay', 'hashkey'),
                     false
                 );
@@ -290,7 +303,7 @@ class Helpers
     }
 
     /**
-     * @param $productId
+     * @param $transactionId
      * @param $transactionData
      * @param $class
      * @param $buttonTitle
@@ -301,6 +314,21 @@ class Helpers
      */
     private function generateSubmitButtonForGTPay($transactionId, $transactionData, $class, $buttonTitle)
     {
+
+//        <input type="hidden" name="gtpay_mert_id" value="17" />
+//<input type="hidden" name="gtpay_tranx_id" value="" />
+//<input type="hidden" name="gtpay_tranx_amt" value="5000" />
+//<input type="hidden" name="gtpay_tranx_curr" value="566" />
+//<input type="hidden" name="gtpay_cust_id" value="458742" />
+//<input type="hidden" name="gtpay_cust_name" value="Test Customer" />
+//<input type="hidden" name="gtpay_tranx_memo" value="Mobow" />
+//<input type="hidden" name="gtpay_no_show_gtbank" value="yes" />
+//<input type="hidden" name="gtpay_gway_name" value="" />
+//<input type="hidden" name="gtpay_tranx_hash" value="" />
+//<input type="hidden" name="gtpay_tranx_noti_url" value="" />
+//<input type="submit" value="Pay Via GTPay" name="btnSubmit"/>
+//<input type="hidden" name="gtpay_echo_data" value="DEQFOOIPP0;REG13762;John Adebisi: 2nd term school and accomodation fees;XNFYGHT325541;1209">
+
         $formId = 'PayViaGTPay';
 
         $gatewayUrl = $this->getConfig('gtpay', 'gatewayUrl');
@@ -308,37 +336,36 @@ class Helpers
         $hiddens = [ ];
         $addition = [ ];
         foreach ($transactionData as $key => $val) {
-            $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            if ((substr($key, 0, 5) == 'item_' OR substr($key, 0, 6) == 'price_' OR substr($key, 0, 12) == 'description_') === false) {
+                $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            }
         }
 
         foreach ($this->getConfig('gtpay') as $key => $val) {
-            if (!is_null($this->getConfig('gtpay', $key)) and $key != 'gatewayUrl' and $key != 'hashkey'
-                and $key != 'success_url' and $key != 'fail_url'
-            ) {
+            if ($key == 'gtpay_tranx_noti_url') {
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $transactionId) . '" />' . "\n";
+            }elseif (!is_null($this->getConfig('gtpay', $key)) and $key != 'gatewayUrl' and $key != 'hashkey'
+                and $key != 'table') {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
         }
 
-        $transactionId[] = '<input type="hidden" name="gtpay_tranx_id" value="' . $this->generateTransactionId($transactionId) . '" />' . "\n";
+        $tranxId = '<input type="hidden" name="gtpay_tranx_id" value="' . $transactionId . '" />' . "\n";
+        $echodata = (isset($transactionData['gtpay_echo_data']))
+            ? '<input type="hidden" name="gtpay_echo_data" value="' . $transactionData['gtpay_echo_data'] . '" />' . "\n"
+            : '<input type="hidden" name="gtpay_echo_data" value="' . $transactionId . ';'. '" />' . "\n";
 
         if (! isset($transactionData['gtpay_tranx_amt'])) {
             throw new UnspecifiedTransactionAmountException;
         }
 
-        $hash = '<input type="hidden" name="gtpay_tranx_hash" value="' . $this->generateTransactionHash($transactionId, $transactionData['gtpay_tranx_amt'], $gateway = 'gtpay') . '" />' . "\n";
-
+        $hash = '<input type="hidden" name="gtpay_tranx_hash" value="' . $this->generateTransactionHash($tranxId, $transactionData['gtpay_tranx_amt'], $gateway = 'gtpay') . '" />' . "\n";
 
         $addition[] = '<button type="submit"  class="' . $class . '">' . $buttonTitle . '</button>';
 
-        $form = '
-            <form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
-                ' . implode('', $transactionId) . '
-                ' . implode('', $configs) . '
-                ' . implode('', $hiddens) . '
-                ' . $hash . '
-                ' . implode('', $addition) . '
-            </form>
-        ';
+        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">' .
+            $tranxId . implode('', $configs) . implode('', $hiddens) . $hash . $echodata . implode('', $addition) .
+            '</form>';
 
         return $form;
     }
@@ -409,6 +436,7 @@ class Helpers
      * @param string $buttonTitle
      *
      * @return string
+     * @throws UnspecifiedTransactionAmountException
      */
     private function generateSubmitButtonForVoguePay($merchantRef, $transactionData, $class, $buttonTitle)
     {
@@ -443,22 +471,21 @@ class Helpers
             }
         }
 
+        if ((isset($transactionData['total']) OR array_key_exists('price_1', $transactionData)) === false) {
+            throw new UnspecifiedTransactionAmountException;
+        }
+
         $merchantRef = '<input type="hidden" name="merchant_ref" value="' . $merchantRef . '" />' . "\n";
 
         $defaultButton = $this->getConfig('voguepay', 'submitButton');
 
         $addition[] = in_array($defaultButton, $voguePayButtons)
-            ? '<input type="image"  src="//voguepay.com/images/buttons/' .
-            $defaultButton . '" alt="Submit">'
-
+            ? '<input type="image"  src="//voguepay.com/images/buttons/' . $defaultButton . '" alt="Submit">'
             : '<input type="submit"  class="' . $class . '">' . $buttonTitle . '</input>';
 
-        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
-                    ' . implode('', $configs) . '
-                    ' . $merchantRef . '
-                    ' . implode('', $hiddens) . '
-                    ' . implode('', $addition) . '
-                </form>';
+        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">' .
+            implode('', $configs) . $merchantRef . implode('', $hiddens) . implode('', $addition) .
+            '</form>';
 
         return $form;
     }
@@ -540,5 +567,81 @@ class Helpers
         }
 
         return $this->config->get('lara-pay-ng.gateways.'. $gateway . $keywithdot);
+    }
+
+    protected function sumItemPrices($transactionData)
+    {
+        $total = 0;
+
+        foreach ($transactionData as $key => $value) {
+            if (strpos($key, 'price_') === 0) {
+                $total += $value;
+            }
+        }
+
+        return $total;
+    }
+
+    /**
+     * @param $result
+     *
+     * @return array
+     */
+    protected function collateResponse($result)
+    {
+        switch($result){
+            case (isset($result->r_gtpay_tranx_id)):
+                return [
+                    'status'         => $result->gtpay_response_description,
+                    'transaction_id' => $result->r_gtpay_tranx_id,
+                    'merchant_ref'   => (!empty($result->gtpay_merchant_ref)) ? $result->gtpay_merchant_ref : 'N/A',
+                    'amount'         => ($result->gtpay_tranx_curr == '844')
+                        ? $this->inDollars($result->r_gtpay_amount)
+                        : $this->inNaira($result->r_gtpay_amount),
+                    'customer_id'    => $result->gtpay_cust_id
+                ];
+                break;
+
+            case (isset($result->v_transaction_id)):
+                return [
+                    'status'         => $result->status,
+                    'transaction_id' => $result->v_transaction_id,
+                    'merchant_ref'   => $result->merchant_ref,
+                    'amount'         => $this->inNaira($result->v_total_paid),
+                    'customer_id'    => $result->v_email
+                ];
+                break;
+
+//            case (isset($result->v_transaction_id)):
+//                return [
+//                    'status'         => $result->gtpay_response_description,
+//                    'transaction_id' => $result->v_transaction_id,
+//                    'merchant_ref'   => $result->gtpay_merchant_ref,
+//                    'amount'         => $result->r_gtpay_amount,
+//                    'customer_id'    => $result->gtpay_cust_id
+//                ];
+//                break;
+
+//            case (isset($result->v_transaction_id)):
+//                return [
+//                    'status'         => $result->gtpay_response_description,
+//                    'transaction_id' => $result->v_transaction_id,
+//                    'merchant_ref'   => $result->gtpay_merchant_ref,
+//                    'amount'         => $result->r_gtpay_amount,
+//                    'customer_id'    => $result->gtpay_cust_id
+//                ];
+//                break;
+
+//            case (isset($result->v_transaction_id)):
+//                return [
+//                    'status'         => $result->gtpay_response_description,
+//                    'transaction_id' => $result->v_transaction_id,
+//                    'merchant_ref'   => $result->gtpay_merchant_ref,
+//                    'amount'         => $result->r_gtpay_amount,
+//                    'customer_id'    => $result->gtpay_cust_id
+//                ];
+//                break;
+        }
+
     }
 }

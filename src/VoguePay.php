@@ -6,6 +6,7 @@ namespace LaraPayNG;
 use Carbon\Carbon;
 use DB;
 use GuzzleHttp\Client;
+use Illuminate\Support\Collection;
 use LaraPayNG\Contracts\PaymentGateway;
 use LaraPayNG\Traits\CanGenerateInvoice;
 
@@ -37,7 +38,7 @@ class VoguePay extends Helpers implements PaymentGateway
             'items'         => $items,
             'memo'          => isset($transactionData['memo']) ? $transactionData['memo'] : null,
             'store_id'      => isset($transactionData['store_id']) ? $transactionData['store_id']
-                                    : config('lara-pay-ng.gateways.voguepay.store_id'),
+                : config('lara-pay-ng.gateways.voguepay.store_id'),
             'recurrent'     => isset($transactionData['recurrent']) ? $transactionData['recurrent'] : false,
             'interval'      => isset($transactionData['interval']) ? $transactionData['interval'] : null,
             'payer_id'      => is_null($payerId) ? $payerId : null,
@@ -48,8 +49,8 @@ class VoguePay extends Helpers implements PaymentGateway
         $transactionId = DB::table(config('lara-pay-ng.gateways.voguepay.table'))->insertGetId($valueToInsert);
 
         $merchantRef = isset($transactionData['merchant_ref'])
-                        ? $transactionData['merchant_ref']
-                        : $this->generateMerchantReference($transactionId);
+            ? $transactionData['merchant_ref']
+            : $this->generateMerchantReference($transactionId);
 
         DB::table(config('lara-pay-ng.gateways.voguepay.table'))
             ->where('id', $transactionId)
@@ -86,15 +87,15 @@ class VoguePay extends Helpers implements PaymentGateway
     public function receiveTransactionResponse($transactionId, $mertId)
     {
         $queryString = config('lara-pay-ng.gateways.voguepay.v_merchant_id') == 'demo'
-                    ?   [
-                            'v_transaction_id' => $transactionId['transaction_id'],
-                            'type' => 'json',
-                            'demo' => 'true'
-                        ]
-                    :   [
-                            'v_transaction_id' => $transactionId['transaction_id'],
-                            'type' => 'json'
-                        ];
+            ?   [
+                'v_transaction_id' => $transactionId['transaction_id'],
+                'type' => 'json',
+                'demo' => 'true'
+            ]
+            :   [
+                'v_transaction_id' => $transactionId['transaction_id'],
+                'type' => 'json'
+            ];
 
         $client = new Client();
 
@@ -111,7 +112,7 @@ class VoguePay extends Helpers implements PaymentGateway
 
         $result = $this->logResponse($transaction);
 
-        return $result;
+        return $this->collateResponse($result);
     }
 
 
@@ -141,7 +142,7 @@ class VoguePay extends Helpers implements PaymentGateway
             "v_extra_charges"   => floatval($transactionData["extra_charges_by_merchant"]),
             "v_merchant_charges"=> floatval($transactionData["charges_paid_by_merchant"]),
             "v_fund_maturity"   => $transactionData["fund_maturity"],
-            "v_total_paid"      => floatval($transactionData["total_paid_by_buyer"]),
+            "v_total_paid"      => ($transactionData["status"] == 'Approved') ? floatval($transactionData["total_paid_by_buyer"]) : 0.00,
             "v_process_duration"=> floatval($transactionData["process_duration"])
 
         ];
@@ -213,16 +214,5 @@ class VoguePay extends Helpers implements PaymentGateway
     }
 
 
-    private function sumItemPrices($transactionData)
-    {
-        $total = 0;
 
-        foreach ($transactionData as $key => $value) {
-            if (strpos($key, 'price_') === 0) {
-                $total += $value;
-            }
-        }
-
-        return $total;
-    }
 }

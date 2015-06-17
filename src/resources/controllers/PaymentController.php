@@ -4,10 +4,16 @@ use Illuminate\Http\Request;
 //use Illuminate\Routing\Controller;
 use Illuminate\Session\Store;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
+use LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
 use LaraPayNG\Managers\PaymentGatewayManager;
+use LaraPayNG\Traits\LaraPayNGTestData;
 
 class PaymentController extends Controller
 {
+    // These Contains All Test Data Used For the Tests
+    use LaraPayNGTestData;
+//    use NotificationResponseDeterminer;
+
     /**
      * @var PaymentGateway
      */
@@ -53,54 +59,55 @@ class PaymentController extends Controller
          *   Or If you are Passing It Via a Request Object, Type-Hint the Method With your
          *   Request Object to get it in here.
          */
+        try {
 
+            // Let the array contain all Necessary Data Needed (For the Default Gateway)
+            // i.e all Inputs for the PayButton
+            // to log The Transaction (Saving To DB)
 
-        // Let the array contain all Necessary Data Needed (For the Default Gateway)
-        // i.e all Inputs for the PayButton
-        // to log The Transaction (Saving To DB)
+            if (config('lara-pay-ng.gateways.driver') == 'voguepay') {
+                $transactionData = $this->voguePayTestData($request);
+            }
 
-        $type = $request->get('type');
+            if (config('lara-pay-ng.gateways.driver') == 'gtpay') {
+                $transactionData = $this->gtPayTestData($request);
+            }
 
-        if ($type == 'products') {
-            $transactionData = [
-                'item_1' => 'Black Aso Oke',
-                'price_1' => 500.00,
-                'description_1' => 'That Aso Oke Mumsi Wants',
+            if (config('lara-pay-ng.gateways.driver') == 'simplepay') {
+                $transactionData = $this->simplePayTestData($request);
+            }
 
-                'item_2' => 'Red Aso Oke',
-                'price_2' => 730.00,
-                'description_2' => 'That Aso Oke Tosin Wants',
+            if (config('lara-pay-ng.gateways.driver') == 'cashenvoy') {
+                $transactionData = $this->cashEnvoyTestData($request);
+            }
 
-                'item_3' => 'Silver Aso Oke',
-                'price_3' => 900.00,
-                'description_3' => 'That Aso Oke I Want',
-            ];
+            if (config('lara-pay-ng.gateways.driver') == 'webpay') {
+                $transactionData = $this->webPayTestData($request);
+            }
+
+            $merchantRef = $this->paymentGateway->logTransaction($transactionData);
+
+            $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData), true);
+
+            return view('payment.confirm', compact('transactionData', 'merchantRef', 'items'));
+
+        } catch (UnspecifiedTransactionAmountException $e){
+            // Handle This Exception However you please
+            // Shouldn't Ever Occur If you Do the Implementation Correctly
+        } catch (UnknownPaymentGatewayException $e){
+            // Handle This Exception However you please
+            // Shouldn't Ever Occur If you Choose One of the Supported Gateways and Spell It right
         }
-
-        if ($type == 'subscription') {
-            $transactionData = [
-                'recurrent' => true,
-                'interval' => 30,
-                'memo' => 'Membership subscription for music club',
-
-                'total' => 13000.00,
-            ];
-        }
-
-
-        $merchantRef = $this->paymentGateway->logTransaction($transactionData);
-
-        $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData), true);
-
-        return view('payment.confirm', compact('transactionData', 'merchantRef', 'items'));
     }
 
 
     public function notification($mert_id, Request $request)
     {
+
+        // For Situations Where a Not you prefer a Notification Url Other than Your Success or Fail Url Directly
         $result = $this->handleTransactionResponse($mert_id, $request);
 
-        // In case you prefer a Notification Url Other than Your Success or Fail Url
+        return $this->determineViewToPresent($result);
     }
 
     /**
@@ -151,11 +158,31 @@ class PaymentController extends Controller
          * place to leverage Events to Do Whatever eg. Send an Invoice, Notify admin of
          * failed transactions, confirm if total is the same so you can rest easy etc.
          * You could do your normal Procedural Approach As Well, If You are not so comfortable with
-         * Events. To Use The Events, Uncomment the Method and its Call and write your implementation
+         * Events. To Use The Events, Uncomment the Call, create the method and write your implementation
          *********************************/
 
         // $this->handleNextStepsUsingEvents($result);
 
         return $result;
     }
+
+    /**
+     * @param $result
+     *
+     * @return \Illuminate\View\View
+     */
+    private function determineViewToPresent($result)
+    {
+        switch ($result['status']){
+            case 'Approved':
+            case 'Approved by Financial Institution':
+                return view(config('lara-pay-ng.gateways.routes.success_view_name'), compact('result'));
+                break;
+
+            default:
+                return view(config('lara-pay-ng.gateways.routes.failure_view_name'), compact('result'));
+                break;
+        }
+    }
+
 }

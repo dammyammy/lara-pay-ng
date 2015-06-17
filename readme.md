@@ -10,11 +10,12 @@ Aiming to Integrate as much Payment Gateways As Possible
  Currently Supported
 
  - VoguePay
+ - GTPay
+
 
 
 Gateways Currently being Looked at (In development)
 
-- GTPay
 - WebPay
 - CashEnvoy
 - SimplePay
@@ -96,7 +97,7 @@ Next Add the following to your routes page in app/Http/routes.php and edit as yo
         'uses' => 'PaymentController@failed'
     ]);
 
-    Route::post('/payment-notification', [
+    Route::post('/payment-notification/{mert_id}', [
         'as' => 'payment-notification',
         'uses' => 'PaymentController@notification'
     ]);
@@ -232,6 +233,26 @@ Instantly gain access to all the methods provided by the facades below.
     UnspecifiedTransactionAmountException       If amount(WebPay) | gtpay_tranx_amt(GTPay) is not in $transactionData.
     UnspecifiedPayItemIdException               If pay_item_id is unspecifed in $transactionData array (GTPay)
     PaymentGatewayVerificationFailedException   If Hash Calculation is Wrong During Verification ( Applies to GTPay/WebPay Gateway ).
+
+
+
+# Commands
+    There is a Command to Help Clear Stale Records That have been logged within a set number of days
+
+    To Use Simply Type in your terminal
+
+    ```bash
+
+        # php artisan lara-pay-ng:purge-database gatewayname --with-failed=false
+        php artisan lara-pay-ng:purge-database
+
+    ```
+
+    You can Pass the gatewayname attribute to the Command eg. gtpay, voguepay. This is particularly useful for Multi-gateway Setups
+    In the event of not passing the option, the default gateway driver from set config would be used.
+
+    It also can be passed a --with-failed option which accepts true/false. True means all Transactions that failed should be included in the deletion
+
 
 
 # Tips
