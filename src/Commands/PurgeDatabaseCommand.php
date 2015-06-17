@@ -18,9 +18,9 @@ class PurgeDatabaseCommand extends Command
      * @var string
      */
     protected $signature = 'lara-pay-ng:purge-database
-                            {gateway=default: The Gateway Driver currently used}
-                            {--days=3: Number of days before transaction is deemed stale}
-                            {--with-failed=false: Should Failed Transactions be deleted as well?}';
+                            {gateway=default : The Gateway Driver currently used}
+                            {--days=3 : Number of days before transaction is deemed stale}
+                            {--with-failed=false : Should Failed Transactions be deleted as well?}';
 
     /**
      * The console command description.
@@ -54,11 +54,12 @@ class PurgeDatabaseCommand extends Command
 
         $days = $this->option('days');
 
+
         $withFailed = $this->option('with-failed');
 
         $allowedGateways = ['cashenvoy', 'gtpay', 'simplepay', 'webpay', 'voguepay'];
 
-        if (in_array($gateway, $allowedGateways)) {
+        if (! in_array($gateway, $allowedGateways)) {
             return $this->error(PHP_EOL.'The specified gateway is either not supported or was mis-spelt.'.PHP_EOL);
         }
 
@@ -66,33 +67,55 @@ class PurgeDatabaseCommand extends Command
             return $this->error(PHP_EOL.'No. of days must be numeric.'.PHP_EOL);
         }
 
-        if (in_array($withFailed, ['true', 'false'])) {
+        if (!in_array($withFailed, ['true', 'false'])) {
             return $this->error(PHP_EOL.'With-Failed (--with-failed=) accepts only true/false.'.PHP_EOL);
         }
 
         $days = intval($days);
 
+
+
         $this->showInputtedDetails($gateway, $days, $withFailed);
+        $allowFailedFields = [ 'true', 'false' ];
+
 
         if (! $this->confirm(PHP_EOL.'Is the Information Presented Above Correct? [y|N]')) {
-            $gateway = $this->choice(PHP_EOL.'What Payment Gateway are you using?', $allowedGateways, $gateway);
+
+            $gateway = $this->choice(PHP_EOL.'What Payment Gateway are you using?', $allowedGateways, array_search($gateway, $allowedGateways));
+
             $days = $this->anticipate(PHP_EOL.'How many days ago should pending transactions be removed?', [3, 7]);
-            $withFailed = $this->choice(PHP_EOL.'I am Guessing you do not want Failed Transactions, Dating back ' . $days . ' days included?', [true, false], $withFailed);
+            $withFailed = $this->choice(PHP_EOL.'I am Guessing you do not want Failed Transactions, Dating back ' . $days . ' days included?',
+                $allowFailedFields, array_search($withFailed, $allowFailedFields));
 
             $this->showInputtedDetails($gateway, $days, $withFailed);
 
             $this->collectRequiredInformation($allowedGateways, $gateway, $withFailed);
         }
 
+
+
         $statusColumnName = $this->getStatusColumnName($gateway);
         $successfulTransactionWord = $this->getSuccessfulTransactionWord($gateway);
 
         $count = $this->getToBeDeletedCount($withFailed, $gateway, $statusColumnName, $successfulTransactionWord, $days);
 
-        if ($this->confirm(PHP_EOL.$count . ' record(s) would be deleted from your database and cannot be restored, Are You Sure you want to do that? [y|N]')) {
-            $this->info(PHP_EOL.'Purging Stale Transactions From ' . $this->getGatewayTable($gateway) . ' Table ... '.PHP_EOL);
-            $this->deleteStaleTransactions($withFailed, $gateway, $statusColumnName, $successfulTransactionWord, $days);
+        if($count > 0) {
+            if ($this->confirm(PHP_EOL.$count . ' record(s) would be deleted from your database and cannot be restored,' .PHP_EOL. (($withFailed == 'true') ? PHP_EOL ."This Includes Transactions that were Attempted but Failed due to issues from gateway" . PHP_EOL: '') . 'Are You Sure you want to do that? [y|N]')) {
+                $this->info(PHP_EOL.'Purging Stale Transactions From ' . $this->getGatewayTable($gateway) . ' Table ... '.PHP_EOL);
+                $this->deleteStaleTransactions($withFailed, $gateway, $statusColumnName, $successfulTransactionWord, $days);
+            }
+            else {
+                $this->comment('Ok! If you insist, I won\'t delete a thing. Good Bye!');
+            }
         }
+        else
+        {
+            $this->comment('There are no records considered stale, No Records Would be Deleted As they are not more than ' . $days . ' days old. Good Bye!');
+
+        }
+
+
+
     }
 
     /**
@@ -120,7 +143,7 @@ class PurgeDatabaseCommand extends Command
                 break;
 
             case false:
-                $gateway = $this->choice(PHP_EOL.'What Payment Gateway are you using?', $allowedGateways, $gateway);
+                $gateway = $this->choice(PHP_EOL.'What Payment Gateway are you using?', $allowedGateways, array_search($gateway, $allowedGateways));
                 $days = $this->anticipate(PHP_EOL.'How many days ago should pending transactions be removed?', [3, 7]);
                 $withFailed = $this->choice(PHP_EOL.'I am Guessing you do not want Failed Transactions, Dating back ' . $days . ' days included?', [true, false], $withFailed);
                 $this->showInputtedDetails($gateway, $days, $withFailed);
@@ -141,16 +164,19 @@ class PurgeDatabaseCommand extends Command
      */
     private function getToBeDeletedCount($withFailed, $gateway, $statusColumnName, $successfulTransactionName, $days)
     {
+        $table = config('lara-pay-ng.gateways.' . $gateway . '.table');
+
         switch ($withFailed) {
             case 'true':
-                return DB::table(config('lara-pay-ng.gateways.' . $gateway . '.table'))
+
+                return DB::table($table)
                     ->where($statusColumnName, '!=', $successfulTransactionName)
                     ->where('updated_at', '<=', Carbon::now()->subDays($days))
                     ->count();
                 break;
 
             case 'false':
-                return DB::table(config('lara-pay-ng.gateways.voguepay.table'))
+                return DB::table($table)
                     ->where($statusColumnName, 'Pending')
                     ->where('updated_at', '<=', Carbon::now()->subDays($days))
                     ->count();
@@ -170,6 +196,8 @@ class PurgeDatabaseCommand extends Command
      */
     private function deleteStaleTransactions($withFailed, $gateway, $statusColumnName, $successfulTransactionName, $days)
     {
+        $table = config('lara-pay-ng.gateways.' . $gateway . '.table');
+
         switch ($withFailed) {
             case 'true':
 
@@ -177,17 +205,17 @@ class PurgeDatabaseCommand extends Command
                 DB::beginTransaction();
 
                 try {
-                    DB::table(config('lara-pay-ng.gateways.' . $gateway . '.table'))
+                    DB::table($table)
                         ->where($statusColumnName, '!=', $successfulTransactionName)
                         ->where('updated_at', '<=', Carbon::now()->subDays($days))
                         ->delete();
 
-                    if (! $this->confirm(PHP_EOL.'This is your Last Chance to Decide not to delete, Do you want me to stop? [y|N]')) {
-                        DB::rollback();
-
-                        $this->comment(PHP_EOL.'Ok too bad, I cannot help you if you refuse to grant the power, Till next time. Safe!'.PHP_EOL);
-                        return false;
-                    }
+//                    if (! $this->confirm(PHP_EOL.'This is your Last Chance to Decide not to delete, Do you want me to stop? [y|N]')) {
+//                        DB::rollback();
+//
+//                        $this->comment(PHP_EOL.'Ok too bad, I cannot help you if you refuse to grant the power, Till next time. Safe!'.PHP_EOL);
+//                        return false;
+//                    }
 
                     DB::commit();
                     $this->comment(PHP_EOL.'Done Deleting Stale Transactions, Till next time. Safe!'.PHP_EOL);
@@ -202,7 +230,7 @@ class PurgeDatabaseCommand extends Command
                 break;
 
             case 'false':
-                return DB::table(config('lara-pay-ng.gateways.voguepay.table'))
+                return DB::table($table)
                     ->where($statusColumnName, 'Pending')
                     ->where('updated_at', '<=', Carbon::now()->subDays($days))
                     ->delete();
@@ -224,7 +252,6 @@ class PurgeDatabaseCommand extends Command
      */
     private function getStatusColumnName($gateway)
     {
-        return ;
         switch ($gateway) {
             case 'voguepay':
                 return 'status';

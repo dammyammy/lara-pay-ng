@@ -243,7 +243,7 @@ Instantly gain access to all the methods provided by the facades below.
 
     ```bash
 
-        # php artisan lara-pay-ng:purge-database gatewayname --with-failed=false
+        # php artisan lara-pay-ng:purge-database gatewayname --days=3 --with-failed=false
         php artisan lara-pay-ng:purge-database
 
     ```
@@ -251,7 +251,8 @@ Instantly gain access to all the methods provided by the facades below.
     You can Pass the gatewayname attribute to the Command eg. gtpay, voguepay. This is particularly useful for Multi-gateway Setups
     In the event of not passing the option, the default gateway driver from set config would be used.
 
-    It also can be passed a --with-failed option which accepts true/false. True means all Transactions that failed should be included in the deletion
+    It also can be passed a --with-failed option which accepts true/false. True means all Transactions that failed should be included in the deletion,
+    as well as a --days option specifying how many days back data is considered old.
 
 
 
