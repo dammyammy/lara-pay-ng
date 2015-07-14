@@ -6,8 +6,7 @@ namespace LaraPayNG\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Config;
-use DB;
-use Carbon\Carbon;
+use LaraPayNG\DataRepositories\LaravelDBRepository;
 
 class PurgeDatabaseCommand extends Command
 {
@@ -29,9 +28,14 @@ class PurgeDatabaseCommand extends Command
      */
     protected $description = 'Purges stale record off the respective gateway database. By default Pending transactions after 3 days are considered stale';
 
+    /**
+     *
+     */
     public function __construct()
     {
         parent::__construct();
+
+        $this->repository = new LaravelDBRepository();
     }
 
     /**
@@ -50,7 +54,7 @@ class PurgeDatabaseCommand extends Command
 
         $gateway = trim(strtolower($this->argument('gateway')));
 
-        $gateway = ($gateway == 'default') ? config('lara-pay-ng.gateways.driver') : $gateway;
+        $gateway = ($gateway == 'default') ? strtolower(config('lara-pay-ng.gateways.driver')) : $gateway;
 
         $days = $this->option('days');
 
@@ -80,7 +84,6 @@ class PurgeDatabaseCommand extends Command
 
 
         if (! $this->confirm(PHP_EOL.'Is the Information Presented Above Correct? [y|N]')) {
-
             $gateway = $this->choice(PHP_EOL.'What Payment Gateway are you using?', $allowedGateways, array_search($gateway, $allowedGateways));
 
             $days = $this->anticipate(PHP_EOL.'How many days ago should pending transactions be removed?', [3, 7]);
@@ -99,23 +102,16 @@ class PurgeDatabaseCommand extends Command
 
         $count = $this->getToBeDeletedCount($withFailed, $gateway, $statusColumnName, $successfulTransactionWord, $days);
 
-        if($count > 0) {
+        if ($count > 0) {
             if ($this->confirm(PHP_EOL.$count . ' record(s) would be deleted from your database and cannot be restored,' .PHP_EOL. (($withFailed == 'true') ? PHP_EOL ."This Includes Transactions that were Attempted but Failed due to issues from gateway" . PHP_EOL: '') . 'Are You Sure you want to do that? [y|N]')) {
                 $this->info(PHP_EOL.'Purging Stale Transactions From ' . $this->getGatewayTable($gateway) . ' Table ... '.PHP_EOL);
                 $this->deleteStaleTransactions($withFailed, $gateway, $statusColumnName, $successfulTransactionWord, $days);
-            }
-            else {
+            } else {
                 $this->comment('Ok! If you insist, I won\'t delete a thing. Good Bye!');
             }
-        }
-        else
-        {
+        } else {
             $this->comment('There are no records considered stale, No Records Would be Deleted As they are not more than ' . $days . ' days old. Good Bye!');
-
         }
-
-
-
     }
 
     /**
@@ -164,24 +160,9 @@ class PurgeDatabaseCommand extends Command
      */
     private function getToBeDeletedCount($withFailed, $gateway, $statusColumnName, $successfulTransactionName, $days)
     {
-        $table = config('lara-pay-ng.gateways.' . $gateway . '.table');
+        $table = $this->getGatewayTable($gateway);
 
-        switch ($withFailed) {
-            case 'true':
-
-                return DB::table($table)
-                    ->where($statusColumnName, '!=', $successfulTransactionName)
-                    ->where('updated_at', '<=', Carbon::now()->subDays($days))
-                    ->count();
-                break;
-
-            case 'false':
-                return DB::table($table)
-                    ->where($statusColumnName, 'Pending')
-                    ->where('updated_at', '<=', Carbon::now()->subDays($days))
-                    ->count();
-                break;
-        }
+        return $this->repository->countStaleTransactionDataFrom($table,$statusColumnName,$successfulTransactionName,$days,$withFailed);
     }
 
 
@@ -196,44 +177,30 @@ class PurgeDatabaseCommand extends Command
      */
     private function deleteStaleTransactions($withFailed, $gateway, $statusColumnName, $successfulTransactionName, $days)
     {
-        $table = config('lara-pay-ng.gateways.' . $gateway . '.table');
+        $table = $this->getGatewayTable($gateway);
 
         switch ($withFailed) {
             case 'true':
 
-                // Start transaction!
-                DB::beginTransaction();
-
-                try {
-                    DB::table($table)
-                        ->where($statusColumnName, '!=', $successfulTransactionName)
-                        ->where('updated_at', '<=', Carbon::now()->subDays($days))
-                        ->delete();
-
-//                    if (! $this->confirm(PHP_EOL.'This is your Last Chance to Decide not to delete, Do you want me to stop? [y|N]')) {
-//                        DB::rollback();
-//
-//                        $this->comment(PHP_EOL.'Ok too bad, I cannot help you if you refuse to grant the power, Till next time. Safe!'.PHP_EOL);
-//                        return false;
-//                    }
-
-                    DB::commit();
-                    $this->comment(PHP_EOL.'Done Deleting Stale Transactions, Till next time. Safe!'.PHP_EOL);
-                    return true;
-                } catch (\Exception $e) {
-                    DB::rollback();
-                    throw $e;
+                if (! $this->confirm(PHP_EOL.'About to delete! This is your Last Chance to Decide to not delete data, Do you want me to go ahead? [y|N]')) {
+                    $this->comment(PHP_EOL.'Ok too bad, I cannot help you if you refuse to grant the power, Till next time. Safe!'.PHP_EOL);
+                    return false;
                 }
 
+                $this->repository->deleteStaleTransactionDataFrom($table, $statusColumnName, $days, $withFailed, $successfulTransactionName);
 
-
+                return $this->comment(PHP_EOL.'Done Deleting Stale Transactions, Till next time. Safe!'.PHP_EOL);
                 break;
 
             case 'false':
-                return DB::table($table)
-                    ->where($statusColumnName, 'Pending')
-                    ->where('updated_at', '<=', Carbon::now()->subDays($days))
-                    ->delete();
+                if (! $this->confirm(PHP_EOL.'About to delete! This is your Last Chance to Decide to not delete data, Do you want me to go ahead? [y|N]')) {
+                    $this->comment(PHP_EOL.'Ok too bad, I cannot help you if you refuse to grant the power, Till next time. Safe!'.PHP_EOL);
+                    return false;
+                }
+
+                $this->repository->deleteStaleTransactionDataFrom($table, $statusColumnName, $days);
+
+                return $this->comment(PHP_EOL.'Done Deleting Stale Transactions, Till next time. Safe!'.PHP_EOL);
                 break;
         }
     }
@@ -244,7 +211,7 @@ class PurgeDatabaseCommand extends Command
      */
     private function getGatewayTable($gateway)
     {
-        return config('lara-pay-ng.gateways.' . $gateway . '.table');
+        return config('lara-pay-ng.gateways.' . strtolower($gateway) . '.table');
     }
 
     /**
@@ -252,7 +219,7 @@ class PurgeDatabaseCommand extends Command
      */
     private function getStatusColumnName($gateway)
     {
-        switch ($gateway) {
+        switch (strtolower($gateway)) {
             case 'voguepay':
                 return 'status';
                 break;
@@ -270,7 +237,7 @@ class PurgeDatabaseCommand extends Command
                 break;
 
             case 'cashenvoy':
-                return 'status';
+                return 'response_description';
                 break;
         }
     }
@@ -280,7 +247,7 @@ class PurgeDatabaseCommand extends Command
      */
     private function getSuccessfulTransactionWord($gateway)
     {
-        switch ($gateway) {
+        switch (strtolower($gateway)) {
             case 'voguepay':
                 return 'Approved';
                 break;
@@ -298,7 +265,7 @@ class PurgeDatabaseCommand extends Command
                 break;
 
             case 'cashenvoy':
-                return 'Approved';
+                return 'CashEnvoy transaction successful.';
                 break;
         }
     }

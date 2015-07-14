@@ -1,4 +1,4 @@
-@extends('payment.master')
+@extends('vendor.lara-pay-ng.master')
 
 @section('content')
 

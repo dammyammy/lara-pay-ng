@@ -10,12 +10,12 @@ use LaraPayNG\Traits\CanGenerateInvoice;
 
 class WebPay extends Helpers implements PaymentGateway
 {
-    use CanGenerateInvoice;
+//    use CanGenerateInvoice;
 
     /**
      * Define Gateway name
      */
-    const GATEWAY = 'WebPay';
+    const GATEWAY = 'webpay';
 
 
     /**
@@ -25,9 +25,9 @@ class WebPay extends Helpers implements PaymentGateway
      *
      * @return mixed
      */
-    public function config($key)
+    public function config($key = '*')
     {
-        return $this->getConfig(strtolower(self::GATEWAY), $key);
+        return $this->getConfig(self::GATEWAY, $key);
     }
 
     /**
@@ -45,6 +45,12 @@ class WebPay extends Helpers implements PaymentGateway
     public function payButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
     {
         return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway);
+    }
+
+
+    public function button($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now')
+    {
+        return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, self::GATEWAY);
     }
 
     public function sendTransactionToGateway($transactionData)
@@ -131,4 +137,41 @@ class WebPay extends Helpers implements PaymentGateway
     {
         // TODO: Implement logResponse() method.
     }
+
+
+
+    /**
+     *
+     * Get All Transactions
+     *
+     * @return mixed
+     */
+    public function viewAllTransactions()
+    {
+        return $this->getAllTransactions(self::GATEWAY);
+    }
+
+    /**
+     *
+     * Get All Failed Transactions
+     *
+     * @return mixed
+     */
+    public function viewFailedTransactions()
+    {
+        return $this->getFailedTransactions(self::GATEWAY);
+    }
+
+    /**
+     *
+     * Get All Successful Transactions
+     *
+     * @return mixed
+     */
+    public function viewSuccessfulTransactions()
+    {
+        return $this->getSuccessfulTransactions(self::GATEWAY);
+    }
+
+
 }

@@ -3,6 +3,7 @@
 namespace LaraPayNG\Managers;
 
 use LaraPayNG\CashEnvoy;
+use LaraPayNG\DataRepositories\DataRepository;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Support\Manager;
@@ -18,10 +19,19 @@ class PaymentGatewayManager extends Manager
      * @var Repository
      */
     protected $config;
+    /**
+     * @var DataRepository
+     */
+    protected $dataRepository;
 
-    public function __construct(Config $config)
+    /**
+     * @param Config $config
+     * @param DataRepository $dataRepository
+     */
+    public function __construct(DataRepository $dataRepository, Config $config)
     {
         $this->config = $config;
+        $this->dataRepository = $dataRepository;
     }
 
     /**
@@ -31,7 +41,7 @@ class PaymentGatewayManager extends Manager
      */
     public function createGtPayDriver()
     {
-        return $this->repository(new GTPay($this->config));
+        return $this->repository(new GTPay($this->dataRepository, $this->config));
     }
     /**
      * Create an instance of the WebPay API driver.
@@ -40,7 +50,7 @@ class PaymentGatewayManager extends Manager
      */
     public function createWebPayDriver()
     {
-        return $this->repository(new WebPay($this->config));
+        return $this->repository(new WebPay($this->dataRepository, $this->config));
     }
     /**
      * Create an instance of the VoguePay  API driver.
@@ -49,7 +59,7 @@ class PaymentGatewayManager extends Manager
      */
     public function createVoguePayDriver()
     {
-        return $this->repository(new VoguePay($this->config));
+        return $this->repository(new VoguePay($this->dataRepository, $this->config));
     }
 
     /**
@@ -59,7 +69,7 @@ class PaymentGatewayManager extends Manager
      */
     public function createSimplePayDriver()
     {
-        return $this->repository(new SimplePay($this->config));
+        return $this->repository(new SimplePay($this->dataRepository, $this->config));
     }
 
     /**
@@ -69,7 +79,7 @@ class PaymentGatewayManager extends Manager
      */
     public function createCashEnvoyDriver()
     {
-        return $this->repository(new CashEnvoy($this->config));
+        return $this->repository(new CashEnvoy($this->dataRepository, $this->config));
     }
 
     /**
@@ -92,7 +102,7 @@ class PaymentGatewayManager extends Manager
      */
     public function getDefaultDriver()
     {
-        $driver = $this->config->get('lara-pay-ng.gateways.driver');
+        $driver = strtolower($this->config->get('lara-pay-ng.gateways.driver'));
 
         if (in_array($driver, ['gtpay', 'webpay', 'voguepay', 'simplepay', 'cashenvoy'])) {
             return $driver;
@@ -102,13 +112,43 @@ class PaymentGatewayManager extends Manager
     }
 
     /**
-     * Set the default cache driver name.
+     * Set the default payment driver name.
      *
-     * @param  string  $name
-     * @return void
+     * @param  string $name
+     *
+     * @return CashEnvoy|SimplePay|VoguePay
+     * @throws UnknownPaymentGatewayException
      */
-    public function setDefaultDriver($name)
+    public function with($name)
     {
-        $this->config->set('lara-pay-ng.gateways.driver', $name);
+//        return $this->config->set('lara-pay-ng.gateways.driver', $name);
+        $name = strtolower($name);
+
+        switch($name) {
+            case "gtpay":
+                return $this->createGtPayDriver();
+                break;
+
+            case "webpay":
+                return $this->createWebPayDriver();
+                break;
+
+            case "simplepay":
+                return $this->createSimplePayDriver();
+                break;
+
+            case "cashenvoy":
+                return $this->createCashEnvoyDriver();
+                break;
+
+            case "voguepay":
+                return $this->createVoguePayDriver();
+                break;
+
+            default:
+                throw new UnknownPaymentGatewayException;
+                break;
+
+        }
     }
 }

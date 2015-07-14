@@ -1,11 +1,11 @@
-@extends('payment.master')
+@extends('vendor.lara-pay-ng.master')
 
 @section('content')
 
     <div class="row">
         <div class="col-md-offset-8 col-md-3">
             <ol class="breadcrumb">
-                <li class="active">Transaction Failed</li>
+                <li class="active">Transaction Successful</li>
             </ol>
         </div>
     </div>
@@ -16,7 +16,7 @@
 
         <div class="col-md-offset-3 col-md-6">
             <h5 class="text-center">
-                <i class="fa fa-exclamation-triangle fa-2x text-danger"></i> Transaction Unsuccessful
+                <i class="fa fa-check fa-2x text-success"></i> Transaction Successful
 
             </h5>
             <div class="pad40"></div>
@@ -27,16 +27,18 @@
             <p><b>Amount Paid:</b> {!! $result['amount'] !!}</p>
             <p><b>Paid by:</b> {!! $result['customer_id'] !!}</p>
 
-
             <hr/>
             <p>
-                We are sorry about that! You can Choose to Pay Again Using the same Channel Or Another.
+                Thank you for your patronage, You are a the best!
+                by the way we've shot an invoice of this transaction into your inbox.
             </p>
+
 
             <hr/>
 
+
             <a class="pull-right btn btn-lg btn-success" href="{{ route('orders') }}">
-                Back To Orders
+                Continue
             </a>
         </div>
 

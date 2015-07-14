@@ -3,6 +3,8 @@
 
 namespace LaraPayNG;
 
+use LaraPayNG\DataRepositories\DataRepository;
+use LaraPayNG\Exceptions\UnspecifiedFieldsInTransactionData;
 use LaraPayNG\Exceptions\UnspecifiedPayItemIdException;
 use LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
@@ -14,13 +16,19 @@ class Helpers
      * @var Repository
      */
     protected $config;
+    /**
+     * @var DataRepository
+     */
+    protected $dataRepository;
 
     /**
+     * @param DataRepository $dataRepository
      * @param Config $config
      */
-    public function __construct(Config $config)
+    public function __construct(DataRepository $dataRepository, Config $config)
     {
         $this->config = $config;
+        $this->dataRepository = $dataRepository;
     }
 
     /**
@@ -36,7 +44,7 @@ class Helpers
      */
     public function payButton($transactionId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now')
     {
-        $gateway = $this->getConfig('driver');
+        $gateway = strtolower($this->getConfig('driver'));
 
         return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway);
     }
@@ -62,6 +70,26 @@ class Helpers
     }
 
     /**
+     * @param $transactionAmount
+     *
+     * @return string
+     */
+    protected function toFloat($transactionAmount, $decimalpoints = 2)
+    {
+        return number_format($transactionAmount, $decimalpoints, '.', '');
+    }
+
+    /**
+     * @param $transactionAmount
+     *
+     * @return string
+     */
+    protected function toCoins($transactionAmount)
+    {
+        return round($transactionAmount, 2)*100;
+    }
+
+    /**
      * Building HTML Form
      *
      * Gateways use this method to build hidden form for product Buy Button.
@@ -78,7 +106,7 @@ class Helpers
      */
     protected function generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway)
     {
-        switch (strtolower($gateway)) {
+        switch ($gateway) {
             case 'gtpay':
                 return $this->generateSubmitButtonForGTPay($transactionId, $transactionData, $class, $buttonTitle);
 
@@ -123,8 +151,33 @@ class Helpers
      */
     public function generateTransactionId($transactionId)
     {
-        return $this->getConfig('transactionIdPrefix') . $transactionId;
+        $gateway = strtolower($this->getConfig('driver'));
+
+        $tranxPrefix = $this->getConfig('transactionIdPrefix');
+
+        if($gateway == 'cashenvoy')
+        {
+            if(!ctype_alnum($tranxPrefix))
+            {
+                $tranxPrefix = preg_replace('/[^\p{L}\p{N}\s]/u', '', $tranxPrefix);
+            }
+        }
+
+        return $tranxPrefix . $transactionId;
     }
+
+
+    /**
+     * Generate Transaction Id For Product
+     * @param $transactionId
+     *
+     * @return string
+     */
+    public function generateTransactionReference($transactionId)
+    {
+        return $this->generateTransactionId($transactionId);
+    }
+
 
     /**
      * Generate Merchant Reference For Transaction
@@ -134,35 +187,40 @@ class Helpers
      */
     public function generateMerchantReference($transactionId)
     {
-        return $this->getConfig('MerchantReferencePrefix') . $transactionId;
+        return $this->generateTransactionId($transactionId);
     }
 
     /**
      * @param $transactionId
      * @param $transactionAmount
      * @param string $gateway
-     *
-     * GTPay:  gtpay_tranx_id + gtpay_tranx_amt + gtpay_tranx_noti_url + hashkey
+     * @param array $data
+     * GTPay:  gtpay_mert_id,gtpay_tranx_id,gtpay_tranx_amt,gtpay_tranx_curr,gtpay_cust_id,gtpay_tranx_noti_url
      * WebPay: tnx_ref + product_id + pay_item_id + amount + site_redirect_url + <the provided MAC key>
      *
-     * @param null $payItemId
      *
      * @return string
      * @throws UnknownPaymentGatewayException
      * @internal param $productId
      */
-    public function generateTransactionHash($transactionId, $transactionAmount, $gateway = 'gtpay', $payItemId = null)
+    public function generateTransactionHash($transactionId, $transactionAmount, $gateway = 'gtpay', $data = [])
     {
-
         switch ($gateway) {
+
+//        [gtpay_mert_id,gtpay_tranx_id,gtpay_tranx_amt,gtpay_tranx_curr,gtpay_cust_id,gtpay_tranx_noti_url]
             case 'gtpay':
-                return hash(
-                    'sha512',
-                    $transactionId . $transactionAmount .
-                    route($this->getConfig('gtpay', 'gtpay_tranx_noti_url')) .
-                    $this->getConfig('gtpay', 'hashkey'),
-                    false
-                );
+                $notifyUrl = route($this->getConfig($gateway, 'gtpay_tranx_noti_url'), $transactionId);
+                $hashkey =  trim($this->getConfig($gateway, 'hashkey'));
+                $mertId =  trim($this->getConfig($gateway, 'gtpay_mert_id'));
+
+                $currency =  isset($data['currency']) ? (($this->getConfig($gateway, 'tranx_curr') == '$') ? '884' : '566') : trim($data['currency']);
+                $customerId =  $data['customerId'];
+
+//                $concat = $transactionId . $transactionAmount . $notifyUrl  . $hashkey;
+                $concat = $mertId . $transactionId . $transactionAmount . $currency . $customerId . $notifyUrl  . $hashkey;
+
+//                dd($concat);
+                return hash('sha512', $concat);
 
                 break;
 
@@ -170,16 +228,18 @@ class Helpers
                 return hash(
                     'sha512',
                     $this->generateTransactionId($transactionId) . $transactionId .
-                    $payItemId . $transactionAmount .
+                    $data['payItemId'] . $transactionAmount .
                     route($this->getConfig('webpay', 'site_redirect_url')) .
-                    $this->getConfig('webpay', 'hashkey'),
-                    false
+                    $this->getConfig('webpay', 'hashkey')
                 );
 
                 break;
 
-            case 'voguepay':
-                return true;
+            case 'cashenvoy':
+                $key = $this->getConfig('cashenvoy', 'ce_key');
+
+                $data = $key.$transactionId. $this->toFloat($transactionAmount);
+                return hash_hmac('sha256', $data, $key, false);
                 break;
 
             default:
@@ -192,15 +252,23 @@ class Helpers
 
     public function generateVerificationHash($tranx_id, $gateway = 'gtpay', $product_id = '4220')
     {
-        if ($gateway == 'webpay') {
-            //     productid, transactionreference and your hash key
-//       $product_id = substr($tranx_id, strpos($tranx_id, 'D') + 1);
+        switch ($gateway) {
+            case 'cashenvoy':
+                $key = $this->getConfig($gateway, 'ce_key');
+                $mertid = $this->getConfig($gateway, 'ce_merchantid');
+                $data = $key. $tranx_id. $mertid;
+                return hash_hmac('sha256', $data, $key, false);
 
-            return hash('sha512', $product_id . $tranx_id . $this->getConfig('webpay', 'hashkey'), false);
+                break;
+
+            case 'gtpay':
+                return hash('sha512', $this->getConfig($gateway, 'gtpay_mert_id') . $tranx_id . $this->getConfig($gateway, 'hashkey'));
+                break;
+
+            case 'webpay':
+                return hash('sha512', $product_id . $tranx_id . $this->getConfig($gateway, 'hashkey'));
+                break;
         }
-
-//    mertid + tranxid + hashkey
-        return hash('sha512', $this->getConfig('gtpay', 'mert_id') . $tranx_id . $this->getConfig('gtpay', 'hashkey'), false);
     }
 
     /**
@@ -217,7 +285,7 @@ class Helpers
                 break;
 
             case 'webpay':
-                $gatewayUrl = $this->getConfig('webpay', 'gatewayUrl');
+                $gatewayUrl = $this->getConfig('webpay', 'gatewayUrl')  . '/pay';
                 break;
 
             case 'voguepay':
@@ -229,7 +297,7 @@ class Helpers
                 break;
 
             case 'cashenvoy':
-                $gatewayUrl = $this->getConfig('cashenvoy', 'gatewayUrl');
+                $gatewayUrl = $this->getConfig('cashenvoy', 'gatewayUrl') . '?cmd=cepay';
                 break;
 
             case 'default':
@@ -245,11 +313,16 @@ class Helpers
      *
      * Retrieve A Config Key From Default Gateway Array
      *
+     * @param null $gateway
+     *
      * @return mixed
      */
-    public function config($key)
+    public function config($key  = '*')
     {
-        return $this->getConfig($this->config->get('lara-pay-ng.gateways.driver'), $key);
+//        $key = empty($key) ? '*'
+        $gateway = strtolower($this->config->get('lara-pay-ng.gateways.driver'));
+
+        return $this->getConfig($gateway, $key);
     }
 
     /**
@@ -264,7 +337,7 @@ class Helpers
 
         switch ($gateway) {
             case 'driver':
-                return $this->config->get('lara-pay-ng.gateways.driver');
+                return strtolower($this->config->get('lara-pay-ng.gateways.driver'));
                 break;
 
             case 'transactionIdPrefix':
@@ -275,6 +348,9 @@ class Helpers
                 return $this->config->get('lara-pay-ng.gateways.MerchantReferencePrefix');
                 break;
 
+            case 'transactionReferencePrefix':
+                return $this->config->get('lara-pay-ng.gateways.transactionReferencePrefix');
+                break;
 
             case 'webpay':
                 return $this->getGatewayConfig($gateway, $key, $keywithdot);
@@ -308,63 +384,83 @@ class Helpers
      * @param $class
      * @param $buttonTitle
      *
-     * @throws UnspecifiedTransactionAmountException
-     * @throws UnknownPaymentGatewayException
      * @return string
+     * @throws UnknownPaymentGatewayException
+     * @throws UnspecifiedFieldsInTransactionData
+     * @throws UnspecifiedTransactionAmountException
      */
     private function generateSubmitButtonForGTPay($transactionId, $transactionData, $class, $buttonTitle)
     {
 
-//        <input type="hidden" name="gtpay_mert_id" value="17" />
-//<input type="hidden" name="gtpay_tranx_id" value="" />
-//<input type="hidden" name="gtpay_tranx_amt" value="5000" />
-//<input type="hidden" name="gtpay_tranx_curr" value="566" />
-//<input type="hidden" name="gtpay_cust_id" value="458742" />
-//<input type="hidden" name="gtpay_cust_name" value="Test Customer" />
-//<input type="hidden" name="gtpay_tranx_memo" value="Mobow" />
-//<input type="hidden" name="gtpay_no_show_gtbank" value="yes" />
-//<input type="hidden" name="gtpay_gway_name" value="" />
-//<input type="hidden" name="gtpay_tranx_hash" value="" />
-//<input type="hidden" name="gtpay_tranx_noti_url" value="" />
-//<input type="submit" value="Pay Via GTPay" name="btnSubmit"/>
-//<input type="hidden" name="gtpay_echo_data" value="DEQFOOIPP0;REG13762;John Adebisi: 2nd term school and accomodation fees;XNFYGHT325541;1209">
+        $transactionData = $this->allowedTransactionDataFields($transactionData, 'gtpay');
+
 
         $formId = 'PayViaGTPay';
 
-        $gatewayUrl = $this->getConfig('gtpay', 'gatewayUrl');
+        $gatewayUrl = $this->determineGatewayUrl('gtpay');
+
+        $currency = null;
+        $customerId = null;
 
         $hiddens = [ ];
         $addition = [ ];
         foreach ($transactionData as $key => $val) {
-            if ((substr($key, 0, 5) == 'item_' OR substr($key, 0, 6) == 'price_' OR substr($key, 0, 12) == 'description_') === false) {
+            if ($key == 'gtpay_tranx_amt') {}
+            elseif ($key == 'gtpay_cust_id') {
+                if(is_null($val)) throw new UnspecifiedFieldsInTransactionData('gtpay_cust_id Not Specified');
+
+                $customerId = $val;
+
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . $customerId . '" />' . "\n";
+            }
+            elseif ((substr($key, 0, 5) == 'item_' or substr($key, 0, 6) == 'price_' or substr($key, 0, 12) == 'description_') === false) {
                 $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
+
         }
 
         foreach ($this->getConfig('gtpay') as $key => $val) {
             if ($key == 'gtpay_tranx_noti_url') {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $transactionId) . '" />' . "\n";
-            }elseif (!is_null($this->getConfig('gtpay', $key)) and $key != 'gatewayUrl' and $key != 'hashkey'
+            }
+            elseif ($key == 'gtpay_tranx_curr') {
+
+                $currency = ($val == '$') ? '884' : '566';
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . $currency . '" />' . "\n";
+            }
+            elseif (!is_null($this->getConfig('gtpay', $key)) and $key != 'gatewayUrl' and $key != 'hashkey'
                 and $key != 'table') {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
+
         }
 
         $tranxId = '<input type="hidden" name="gtpay_tranx_id" value="' . $transactionId . '" />' . "\n";
+
         $echodata = (isset($transactionData['gtpay_echo_data']))
             ? '<input type="hidden" name="gtpay_echo_data" value="' . $transactionData['gtpay_echo_data'] . '" />' . "\n"
             : '<input type="hidden" name="gtpay_echo_data" value="' . $transactionId . ';'. '" />' . "\n";
 
-        if (! isset($transactionData['gtpay_tranx_amt'])) {
+
+        if ((! isset($transactionData['gtpay_tranx_amt']) ) AND ( ! array_key_exists('price_1', $transactionData))) {
             throw new UnspecifiedTransactionAmountException;
         }
 
-        $hash = '<input type="hidden" name="gtpay_tranx_hash" value="' . $this->generateTransactionHash($tranxId, $transactionData['gtpay_tranx_amt'], $gateway = 'gtpay') . '" />' . "\n";
+        $amount = (! isset($transactionData['gtpay_tranx_amt']) ) ? $this->sumItemPrices($transactionData) : $transactionData['gtpay_tranx_amt'];
+        $amountInCoins = $this->toCoins($amount);
+
+
+        $addition[] = '<input type="hidden" name="gtpay_tranx_amt" value="' . $amountInCoins . '" />' . "\n";
+
+
+
+        $hash = '<input type="hidden" name="gtpay_hash" value="' . $this->generateTransactionHash($transactionId, $amountInCoins, $gateway = 'gtpay', ['currency' => $currency,  'customerId' => $customerId]) . '" />' . "\n";
 
         $addition[] = '<button type="submit"  class="' . $class . '">' . $buttonTitle . '</button>';
 
-        $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">' .
-            $tranxId . implode('', $configs) . implode('', $hiddens) . $hash . $echodata . implode('', $addition) .
+        $form = '<form method="POST" target="_self" action="' . $gatewayUrl . '" id="' . $formId . '">' .
+            $tranxId . implode('', $configs) . implode('', $hiddens) . $hash .
+            $echodata . implode('', $addition) .
             '</form>';
 
         return $form;
@@ -383,9 +479,11 @@ class Helpers
      */
     private function generateSubmitButtonForWebPay($transactionId, $transactionData, $class, $buttonTitle)
     {
+        $transactionData = $this->allowedTransactionDataFields($transactionData, 'webpay');
+
         $formId = 'PayViaWebPay';
 
-        $gatewayUrl = $this->getConfig('webpay', 'gatewayUrl') . '/pay';
+        $gatewayUrl = $this->determineGatewayUrl('webpay');
 
         $hiddens = [ ];
         $addition = [ ];
@@ -440,6 +538,9 @@ class Helpers
      */
     private function generateSubmitButtonForVoguePay($merchantRef, $transactionData, $class, $buttonTitle)
     {
+        $transactionData = $this->allowedTransactionDataFields($transactionData, 'voguepay');
+
+
         $voguePayButtons = [
             'buynow_blue.png', 'buynow_red.png', 'buynow_green.png', 'buynow_grey.png', 'addtocart_blue.png',
             'addtocart_red.png', 'addtocart_green.png', 'addtocart_grey.png', 'checkout_blue.png',
@@ -451,7 +552,7 @@ class Helpers
 
         $formId = 'PayViaVoguePay';
 
-        $gatewayUrl = $this->getConfig('voguepay', 'gatewayUrl');
+        $gatewayUrl = $this->determineGatewayUrl('voguepay');
 
         $hiddens = [ ];
         $configs = [ ];
@@ -471,7 +572,7 @@ class Helpers
             }
         }
 
-        if ((isset($transactionData['total']) OR array_key_exists('price_1', $transactionData)) === false) {
+        if ((isset($transactionData['total']) or array_key_exists('price_1', $transactionData)) === false) {
             throw new UnspecifiedTransactionAmountException;
         }
 
@@ -490,17 +591,82 @@ class Helpers
         return $form;
     }
 
+    /**
+     * @param $transactionRef
+     * @param array $transactionData
+     * @param string $class
+     * @param string $buttonTitle
+     *
+     * @return string
+     * @throws UnspecifiedTransactionAmountException
+     */
+    private function generateSubmitButtonForCashEnvoy($transactionRef, $transactionData, $class, $buttonTitle)
+    {
+        $formId = 'PayViaCashEnvoy';
+
+        $gatewayUrl = $this->determineGatewayUrl('cashenvoy');
+
+        $transactionData = $this->allowedTransactionDataFields($transactionData, 'cashenvoy');
+
+        $hiddens = [ ];
+        $configs = [ ];
+        $addition = [ ];
+
+
+        foreach ($transactionData as $key => $val) {
+            if ($key == 'ce_amount') {}
+            elseif ((substr($key, 0, 5) == 'item_' or substr($key, 0, 6) == 'price_' or substr($key, 0, 12) == 'description_') === false) {
+                $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            }
+        }
+
+        foreach ($this->getConfig('cashenvoy') as $key => $val) {
+            if ($key == 'ce_notifyurl') {
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $transactionRef) . '" />' . "\n";
+            } elseif (!is_null($this->config($key)) and $key != 'gatewayUrl' and $key != 'ce_key'
+                and $key != 'table' and $key != 'icon') {
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
+            }
+        }
+
+
+        if ((isset($transactionData['ce_amount']) or array_key_exists('price_1', $transactionData)) === false) {
+            throw new UnspecifiedTransactionAmountException;
+        }
+
+        $amount = (! isset($transactionData['ce_amount']) ) ? $this->sumItemPrices($transactionData) : $transactionData['ce_amount'];
+
+
+        $addition[] = '<input type="hidden" name="ce_amount" value="' . $this->toFloat($amount) . '" />' . "\n";
+
+        $transRef = '<input type="hidden" name="ce_transref" value="' . $transactionRef . '" />' . "\n";
+
+        $signature = '<input type="hidden" name="ce_signature" value="' . $this->generateTransactionHash($transactionRef, $amount, 'cashenvoy') . '" />' . "\n";
+
+
+        $addition[] =  '<button type="submit"  class="' . $class . '">' . $buttonTitle . '<span><img src="' . $this->config('icon') . '"></span></button>';
+
+        $form = '<form method="POST" target="_self" name="ce" action="' . $gatewayUrl . '" id="' . $formId . '">' .
+            implode('', $configs) . $transRef . implode('', $hiddens) . $signature .
+            implode('', $addition) .
+            '</form>';
+
+        return $form;
+    }
+
 
     /**
-     * @param $merchantRef
+     * @param $customid
      * @param array $transactionData
      * @param string $class
      * @param string $buttonTitle
      *
      * @return string
      */
-    private function generateSubmitButtonForSimplePay($merchantRef, $transactionData, $class, $buttonTitle)
+    private function generateSubmitButtonForSimplePay($customid, $transactionData, $class, $buttonTitle)
     {
+        $transactionData = $this->allowedTransactionDataFields($transactionData, 'simplepay');
+
         $simplePayButtons = [
             'simplepaylogoescrow.gif', 'simplepaylogo.gif', 'simplepaysubscribe.gif',
             'spaccepted.png', 'simplepaydonatenow.gif',
@@ -508,27 +674,60 @@ class Helpers
 
         $formId = 'PayViaSimplePay';
 
-        $gatewayUrl = $this->getConfig('simplepay', 'gatewayUrl');
+        $gatewayUrl = $this->determineGatewayUrl('simplepay');
 
         $hiddens = [ ];
         $configs = [ ];
         $addition = [ ];
 
+//        <!-- SimplePay PAYMENT FORM -->
+//        <form method=post action=https://simplepay4u.com/process.php>
+
+//        <input type=hidden name=period value="--DURATION-DAYS--">
+//        <input type=hidden name=trial value="--TRIAL-PERIOD-DAYS--">
+//        <input type=hidden name=setup value="--SETUP-FEES--">
+//        <input type=hidden name=tax value="--TAX-FEES--">
+//        <input type=hidden name=shipping value="--SHIPPING-FEES--">
+
+//        <input type=hidden name=CMAccountid value="11221313">
+
+//        <input type=hidden name=member value="useraccount@simplepay4u.com">
+//        <input type=hidden name=escrow value="N">
+//        <input type=hidden name=action value="payment">
+//        <input type=hidden name=price value="100">
+//        <input type=hidden name=quantity value="1">
+//        <input type=hidden name=ureturn value="http://www.mydomain.com/success.php">
+//        <input type=hidden name=unotify value="http://www.mydomain.com/notify.php">
+//        <input type=hidden name=ucancel value="http://www.mydomain.com/failure.php">
+//        <input type=hidden name=comments value="Payment Received for Service">
+//        <input type=hidden name=customid value="SP93104">
+//        <input type=hidden name=freeclient value="N">
+//        <input type=hidden name=nocards value="N">
+//        <input type=hidden name=giftcards value="Y">
+//        <input type=hidden name=chargeforcard value="Y">
+//        <input type=hidden name=site_logo value="http://www.mydomain.com/images/logo.gif">
+//        <input type=image src="http://www.mydomain.com/images/submit.gif">
+//        </form>
+
         foreach ($transactionData as $key => $val) {
-            if ($key != 'member') {
+            if ($key == 'member') {}
+            elseif ($key == 'freeclient' or $key == 'escrow' or $key == 'giftcards' or $key == 'chargeforcard' or $key == 'nocards') {
+                $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . (($val === false) ? 'N' : 'Y')   . '" />' . "\n";
+            } elseif ((substr($key, 0, 5) == 'item_' or substr($key, 0, 6) == 'price_' or substr($key, 0, 12) == 'description_') === false) {
                 $hiddens[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
         }
 
         foreach ($this->getConfig('simplepay') as $key => $val) {
-            if ($key == 'notify_url' or $key == 'success_url' or $key == 'fail_url') {
-                $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $merchantRef) . '" />' . "\n";
-            } elseif (!is_null($this->getConfig('simplepay', $key)) and $key != 'submitButton' and $key != 'table') {
+            if ($key == 'unotify' or $key == 'ucancel' or $key == 'ureturn') {
+                $configs[] = '<input type="hidden" name="' . $key . '" value="' . route($val, $customid) . '" />' . "\n";
+            } elseif (!is_null($this->getConfig('simplepay', $key)) and $key != 'submitButton' and $key != 'gatewayUrl' and $key != 'table') {
                 $configs[] = '<input type="hidden" name="' . $key . '" value="' . $val . '" />' . "\n";
             }
+
         }
 
-        $merchantRef = '<input type="hidden" name="member" value="' . $merchantRef . '" />' . "\n";
+        $customid = '<input type="hidden" name="customid" value="' . $customid . '" />' . "\n";
 
         $defaultButton = $this->getConfig('simplepay', 'submitButton');
 
@@ -540,7 +739,7 @@ class Helpers
 
         $form = '<form method="POST" action="' . $gatewayUrl . '" id="' . $formId . '">
                     ' . implode('', $configs) . '
-                    ' . $merchantRef . '
+                    ' . $customid . '
                     ' . implode('', $hiddens) . '
                     ' . implode('', $addition) . '
                 </form>';
@@ -579,7 +778,7 @@ class Helpers
             }
         }
 
-        return $total;
+        return $this->toFloat($total);
     }
 
     /**
@@ -589,16 +788,18 @@ class Helpers
      */
     protected function collateResponse($result)
     {
-        switch($result){
+        switch ($result) {
             case (isset($result->r_gtpay_tranx_id)):
                 return [
                     'status'         => $result->gtpay_response_description,
                     'transaction_id' => $result->r_gtpay_tranx_id,
+                    'items'          => $result->items,
                     'merchant_ref'   => (!empty($result->gtpay_merchant_ref)) ? $result->gtpay_merchant_ref : 'N/A',
                     'amount'         => ($result->gtpay_tranx_curr == '844')
                         ? $this->inDollars($result->r_gtpay_amount)
                         : $this->inNaira($result->r_gtpay_amount),
-                    'customer_id'    => $result->gtpay_cust_id
+                    'customer_id'    => $result->gtpay_cust_id,
+                    'payer_id'       => $result->gtpay_cust_id
                 ];
                 break;
 
@@ -606,31 +807,36 @@ class Helpers
                 return [
                     'status'         => $result->status,
                     'transaction_id' => $result->v_transaction_id,
+                    'items'          => $result->items,
                     'merchant_ref'   => $result->merchant_ref,
                     'amount'         => $this->inNaira($result->v_total_paid),
-                    'customer_id'    => $result->v_email
+                    'customer_id'    => $result->v_email,
+                    'payer_id'       => $result->v_email
                 ];
                 break;
 
-//            case (isset($result->v_transaction_id)):
-//                return [
-//                    'status'         => $result->gtpay_response_description,
-//                    'transaction_id' => $result->v_transaction_id,
-//                    'merchant_ref'   => $result->gtpay_merchant_ref,
-//                    'amount'         => $result->r_gtpay_amount,
-//                    'customer_id'    => $result->gtpay_cust_id
-//                ];
-//                break;
+            case (isset($result->ce_transref)):
 
-//            case (isset($result->v_transaction_id)):
-//                return [
-//                    'status'         => $result->gtpay_response_description,
-//                    'transaction_id' => $result->v_transaction_id,
-//                    'merchant_ref'   => $result->gtpay_merchant_ref,
-//                    'amount'         => $result->r_gtpay_amount,
-//                    'customer_id'    => $result->gtpay_cust_id
-//                ];
-//                break;
+                return [
+                    'status'         => $result->response_description,
+                    'items'          => $result->items,
+                    'transaction_id' => isset($result->transaction_id) ? $result->transaction_id : null,
+                    'merchant_ref'   => $result->ce_transref,
+                    'amount'         => ($result->response_code == 'C00') ? $this->inNaira($result->amount) : $this->inNaira(0.00),
+                    'customer_id'    => $result->ce_customerid,
+                    'payer_id'       => $result->ce_customerid
+                ];
+                break;
+
+            case (isset($result->s_transaction_id)):
+                return [
+                    'status'         => $result->status,
+                    'transaction_id' => $result->s_transaction_id,
+                    'merchant_ref'   => $result->customid,
+                    'amount'         => $result->s_total,
+                    'customer_id'    => $result->s_buyer
+                ];
+                break;
 
 //            case (isset($result->v_transaction_id)):
 //                return [
@@ -642,6 +848,142 @@ class Helpers
 //                ];
 //                break;
         }
-
     }
+
+    /**
+     * @param null $gateway
+     *
+     * Get All Transactions
+     *
+     * @return mixed
+     */
+    public function getAllTransactions($gateway = null)
+    {
+        $table = is_null($gateway) ? $this->config('table') : $this->getConfig($gateway, 'table');
+
+        return $this->dataRepository->getAllTransactionsFrom($table);
+    }
+
+    /**
+     * @param null $gateway
+     *
+     * Get All Successful Transactions
+     *
+     * @return mixed
+     */
+    public function getSuccessfulTransactions($gateway = null)
+    {
+        $table = is_null($gateway) ? $this->config('table') : $this->getConfig($gateway, 'table');
+
+        return $this->dataRepository->getAllSuccessfulTransactionsFrom($table);
+    }
+
+    /**
+     * @param null $gateway
+     *
+     * Get All Failed Transactions
+     *
+     * @return mixed
+     */
+    public function getFailedTransactions($gateway = null)
+    {
+        $table = is_null($gateway) ? $this->config('table') : $this->getConfig($gateway, 'table');
+
+        return $this->dataRepository->getAllFailedTransactionsFrom($table);
+    }
+
+    private function allowedTransactionDataFields($transactionData, $gateway)
+    {
+
+        switch($gateway) {
+
+            case 'gtpay':
+
+                $allowedFields = [
+                    'gtpay_cust_name', 'gtpay_tranx_amt', 'gtpay_tranx_memo', 'gtpay_cust_id',
+                    'gtpay_gway_name', 'gtpay_tranx_curr', 'gtpay_gway_first', 'gtpay_echo_data',
+                    'gtpay_tranx_id'
+                ];
+
+                return $this->extractNeededTransactionData($transactionData, $allowedFields);
+
+                break;
+
+            case 'simplepay':
+
+                $allowedFields = [
+                    'period', 'trial', 'setup', 'tax', 'shipping', 'escrow', 'action',
+                    'price', 'quantity', 'comments', 'customid', 'freeclient', 'nocards',
+                    'giftcards', 'chargeforcard', 'site_logo', 'payer_id'
+                ];
+
+                return $this->extractNeededTransactionData($transactionData, $allowedFields);
+
+                break;
+
+            case 'voguepay':
+
+                $allowedFields = [
+                    'merchant_ref', 'memo', 'developer_code', 'store_id', 'total',
+                    'recurrent', 'interval'
+                ];
+
+                return $this->extractNeededTransactionData($transactionData, $allowedFields);
+
+                break;
+
+            case 'webpay':
+
+                $allowedFields = [
+                    'period', 'trial', 'setup', 'tax', 'shipping', 'escrow', 'action',
+                    'price', 'quantity', 'comments', 'customid', 'freeclient', 'nocards',
+                    'giftcards', 'chargeforcard', 'site_logo'
+                ];
+
+                return $this->extractNeededTransactionData($transactionData, $allowedFields);
+
+                break;
+
+            case 'cashenvoy':
+
+                $allowedFields = [
+                    'ce_transref', 'ce_amount', 'ce_customerid', 'ce_memo', 'ce_window', 'ce_type'
+                ];
+
+                return $this->extractNeededTransactionData($transactionData, $allowedFields);
+
+                break;
+
+            default:
+                throw new UnknownPaymentGatewayException;
+                break;
+
+        }
+    }
+
+    /**
+     * @param $transactionData
+     * @param $allowedFields
+     *
+     * @return mixed
+     */
+    private function extractNeededTransactionData($transactionData,$allowedFields) {
+
+        $redefinedTransactionData = [];
+
+        $generalFields = ['price_', 'description_', 'item_'];
+
+        foreach ($transactionData as $key => $data) {
+            if (in_array($key, $allowedFields)) {
+                $redefinedTransactionData[$key] = $data;
+            }
+
+            if (starts_with($key, $generalFields)) {
+                $redefinedTransactionData[$key] = $data;
+            }
+        }
+
+        return $redefinedTransactionData;
+    }
+
 }

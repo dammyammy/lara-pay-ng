@@ -4,59 +4,29 @@
 namespace LaraPayNG;
 
 use Carbon\Carbon;
-use DB;
 use GuzzleHttp\Client;
-use Illuminate\Support\Collection;
 use LaraPayNG\Contracts\PaymentGateway;
 use LaraPayNG\Traits\CanGenerateInvoice;
 
 class VoguePay extends Helpers implements PaymentGateway
 {
-    use CanGenerateInvoice;
+//    use CanGenerateInvoice;
 
     /**
      * Define Gateway name
      */
-    const GATEWAY = 'VoguePay';
+    const GATEWAY = 'voguepay';
 
     /**
-     * Log Transaction
+     * @param $key
      *
-     * @param $transactionData
-     * @param null $payerId
+     * Retrieve A Config Key From VoguePay Gateway Array
      *
-     * @return array
+     * @return mixed
      */
-    public function logTransaction($transactionData, $payerId = null)
+    public function config($key = '*')
     {
-        $items = $this->serializeItemsToJson($transactionData);
-
-        $total = $this->sumItemPrices($transactionData);
-
-        $valueToInsert = [
-            'total'         => isset($transactionData['total']) ? $transactionData['total']: $total,
-            'items'         => $items,
-            'memo'          => isset($transactionData['memo']) ? $transactionData['memo'] : null,
-            'store_id'      => isset($transactionData['store_id']) ? $transactionData['store_id']
-                : config('lara-pay-ng.gateways.voguepay.store_id'),
-            'recurrent'     => isset($transactionData['recurrent']) ? $transactionData['recurrent'] : false,
-            'interval'      => isset($transactionData['interval']) ? $transactionData['interval'] : null,
-            'payer_id'      => is_null($payerId) ? $payerId : null,
-            'created_at'    => Carbon::now(),
-            'updated_at'    => Carbon::now(),
-        ];
-
-        $transactionId = DB::table(config('lara-pay-ng.gateways.voguepay.table'))->insertGetId($valueToInsert);
-
-        $merchantRef = isset($transactionData['merchant_ref'])
-            ? $transactionData['merchant_ref']
-            : $this->generateMerchantReference($transactionId);
-
-        DB::table(config('lara-pay-ng.gateways.voguepay.table'))
-            ->where('id', $transactionId)
-            ->update(['merchant_ref'  => $merchantRef]);
-
-        return $merchantRef;
+        return $this->getConfig(self::GATEWAY, $key);
     }
 
 
@@ -77,6 +47,52 @@ class VoguePay extends Helpers implements PaymentGateway
         return $this->generateSubmitButton($transactionId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
+
+    public function button($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now')
+    {
+        return $this->payButton($productId, $transactionData, $class, $buttonTitle, self::GATEWAY);
+    }
+
+
+    /**
+     * Log Transaction
+     *
+     * @param $transactionData
+     * @param null $payerId
+     *
+     * @return array
+     */
+    public function logTransaction($transactionData, $payerId = null)
+    {
+        $items = $this->serializeItemsToJson($transactionData);
+
+        $total = $this->sumItemPrices($transactionData);
+
+        $valueToInsert = [
+            'total'         => isset($transactionData['total']) ? $transactionData['total']: $total,
+            'items'         => $items,
+            'memo'          => isset($transactionData['memo']) ? $transactionData['memo'] : null,
+            'store_id'      => isset($transactionData['store_id']) ? $transactionData['store_id'] : $this->config('store_id'),
+            'recurrent'     => isset($transactionData['recurrent']) ? $transactionData['recurrent'] : false,
+            'interval'      => isset($transactionData['interval']) ? $transactionData['interval'] : null,
+            'payer_id'      => is_null($payerId) ? $payerId : null,
+            'created_at'    => Carbon::now(),
+            'updated_at'    => Carbon::now(),
+        ];
+
+        $table = $this->config('table');
+
+        $transactionId = $this->dataRepository->saveTransactionDataTo($table, $valueToInsert);
+
+        $merchantRef = isset($transactionData['merchant_ref']) ? $transactionData['merchant_ref'] : $this->generateMerchantReference($transactionId);
+
+        $this->dataRepository->updateTransactionDataFrom($table, ['merchant_ref'  => $merchantRef], $transactionId);
+
+        return $merchantRef;
+    }
+
+
+
     /**
      * @param $transactionId
      *
@@ -86,7 +102,7 @@ class VoguePay extends Helpers implements PaymentGateway
      */
     public function receiveTransactionResponse($transactionId, $mertId)
     {
-        $queryString = config('lara-pay-ng.gateways.voguepay.v_merchant_id') == 'demo'
+        $queryString = ($this->config('v_merchant_id') == 'demo')
             ?   [
                 'v_transaction_id' => $transactionId['transaction_id'],
                 'type' => 'json',
@@ -129,6 +145,8 @@ class VoguePay extends Helpers implements PaymentGateway
         // If Success, Notify User Via Email Of their Order
         // Notify Admin Of New Order
 
+        $amountCorrect = $transactionData["total"] == $transactionData["total_paid_by_buyer"];
+
         $valueToUpdate = [
             "v_transaction_id"  => $transactionData["transaction_id"],
             "v_email"           => $transactionData["email"],
@@ -147,28 +165,15 @@ class VoguePay extends Helpers implements PaymentGateway
 
         ];
 
+        $table = $this->config('table');
 
+        $this->dataRepository->updateTransactionDataWhere('merchant_ref', $transactionData['merchant_ref'], $table, $valueToUpdate);
 
-        DB::table(config('lara-pay-ng.gateways.voguepay.table'))
-            ->where('merchant_ref', $transactionData['merchant_ref'])
-            ->update($valueToUpdate);
+        return $this->dataRepository->getTransactionDataWhere('merchant_ref', $transactionData['merchant_ref'], $table);
 
-        return DB::table(config('lara-pay-ng.gateways.voguepay.table'))
-            ->where('merchant_ref', $transactionData['merchant_ref'])
-            ->first();
     }
 
-    /**
-     * @param $key
-     *
-     * Retrieve A Config Key From VoguePay Gateway Array
-     *
-     * @return mixed
-     */
-    public function config($key)
-    {
-        return $this->getConfig(strtolower(self::GATEWAY), $key);
-    }
+
 
     /**
      * @param $transactionData
@@ -214,5 +219,37 @@ class VoguePay extends Helpers implements PaymentGateway
     }
 
 
+    /**
+     *
+     * Get All Transactions
+     *
+     * @return mixed
+     */
+    public function viewAllTransactions()
+    {
+        return $this->getAllTransactions(self::GATEWAY);
+    }
+
+    /**
+     *
+     * Get All Failed Transactions
+     *
+     * @return mixed
+     */
+    public function viewFailedTransactions()
+    {
+        return $this->getFailedTransactions(self::GATEWAY);
+    }
+
+    /**
+     *
+     * Get All Successful Transactions
+     *
+     * @return mixed
+     */
+    public function viewSuccessfulTransactions()
+    {
+        return $this->getSuccessfulTransactions(self::GATEWAY);
+    }
 
 }

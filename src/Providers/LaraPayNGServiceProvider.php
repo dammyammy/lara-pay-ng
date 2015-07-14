@@ -4,6 +4,8 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 use LaraPayNG\CashEnvoy;
 use LaraPayNG\Commands\PurgeDatabaseCommand;
+use LaraPayNG\DataRepositories\DataRepository;
+use LaraPayNG\DataRepositories\LaravelDBRepository;
 use LaraPayNG\GTPay;
 use LaraPayNG\Managers\PaymentGatewayManager;
 use LaraPayNG\SimplePay;
@@ -24,18 +26,20 @@ class LaraPayNGServiceProvider extends ServiceProvider
         $this->registerAliases();
 
         $this->registerCommands();
-    }
 
+        $this->registerRepository();
+
+    }
 
     /**
      * Bootstrap the application services.
      *
      * Publishes package config file to applications config folder :) Thanks busayo
      *
-     * @return void
      */
     public function boot()
     {
+
         // routes
         if (! $this->app->routesAreCached()) {
             require __DIR__ . '/../resources/routes.php';
@@ -43,7 +47,7 @@ class LaraPayNGServiceProvider extends ServiceProvider
 
         // views
         $this->publishes([
-            __DIR__. '/../resources/views/' => base_path('/resources/views/')
+            __DIR__. '/../resources/views/' => base_path('/resources/views/vendor/')
         ], 'views');
 
 
@@ -79,6 +83,16 @@ class LaraPayNGServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register the artisan commands.
+     *
+     * @return void
+     */
+    private function registerRepository()
+    {
+        $this->app->bind(DataRepository::class, LaravelDBRepository::class);
+    }
+
+    /**
      * Get the services provided by the provider.
      *
      * @return array
@@ -86,8 +100,8 @@ class LaraPayNGServiceProvider extends ServiceProvider
     public function provides()
     {
         return [
-                    'gtpay', 'voguepay', 'webpay', 'cashenvoy', 'simplepay',
-                    'pay', 'lara-pay-ng', 'command.lara-pay-ng.purge-database'
+            'gtpay', 'voguepay', 'webpay', 'cashenvoy', 'simplepay',
+            'pay', 'lara-pay-ng', 'command.lara-pay-ng.purge-database'
         ];
     }
 
@@ -104,31 +118,32 @@ class LaraPayNGServiceProvider extends ServiceProvider
     private function registerGateways()
     {
         $this->app['lara-pay-ng'] = $this->app->share(function ($app) {
-            return new PaymentGatewayManager($this->app['config'], $app);
+            return new PaymentGatewayManager($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
 
         $this->app['pay'] = $this->app->share(function ($app) {
-            return new PaymentGatewayManager($this->app['config'], $app);
+            return new PaymentGatewayManager($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
 
         $this->app['gtpay'] = $this->app->share(function ($app) {
-            return new GTPay($this->app['config'], $app);
+            return new GTPay($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
 
         $this->app['webpay'] = $this->app->share(function ($app) {
-            return new WebPay($this->app['config'], $app);
+            return new WebPay($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
 
         $this->app['voguepay'] = $this->app->share(function ($app) {
-            return new VoguePay($this->app['config'], $app);
+            return new VoguePay($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
 
         $this->app['simplepay'] = $this->app->share(function ($app) {
-            return new SimplePay($this->app['config'], $app);
+            return new SimplePay($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
 
         $this->app['cashenvoy'] = $this->app->share(function ($app) {
-            return new CashEnvoy($this->app['config'], $app);
+            return new CashEnvoy($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
     }
+
 }

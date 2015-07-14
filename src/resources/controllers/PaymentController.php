@@ -5,14 +5,20 @@ use Illuminate\Http\Request;
 use Illuminate\Session\Store;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
+use LaraPayNG\Facades\GTPay;
+use LaraPayNG\Facades\VoguePay;
+use LaraPayNG\Facades\CashEnvoy;
+use LaraPayNG\Facades\SimplePay;
+use LaraPayNG\Facades\WebPay;
 use LaraPayNG\Managers\PaymentGatewayManager;
+use LaraPayNG\Traits\DetermineViewToPresent;
 use LaraPayNG\Traits\LaraPayNGTestData;
 
 class PaymentController extends Controller
 {
-    // These Contains All Test Data Used For the Tests
-    use LaraPayNGTestData;
-//    use NotificationResponseDeterminer;
+
+    use LaraPayNGTestData; // These Contains All Test Data Used For the Tests, Remove after implementing your own
+    use DetermineViewToPresent; // These Determines If a Failure Or Success View is to be Shown. Leave It
 
     /**
      * @var PaymentGateway
@@ -42,7 +48,9 @@ class PaymentController extends Controller
      */
     public function orders()
     {
-        return view('payment.orders');
+
+//        return \Pay::button(2,['total' => 300]);
+        return view('vendor.lara-pay-ng.orders');
     }
 
     /**
@@ -62,39 +70,25 @@ class PaymentController extends Controller
         try {
 
             // Let the array contain all Necessary Data Needed (For the Default Gateway)
+            // You need to create your own TransactionData and not use the testTransactionData
             // i.e all Inputs for the PayButton
-            // to log The Transaction (Saving To DB)
 
-            if (config('lara-pay-ng.gateways.driver') == 'voguepay') {
-                $transactionData = $this->voguePayTestData($request);
-            }
-
-            if (config('lara-pay-ng.gateways.driver') == 'gtpay') {
-                $transactionData = $this->gtPayTestData($request);
-            }
-
-            if (config('lara-pay-ng.gateways.driver') == 'simplepay') {
-                $transactionData = $this->simplePayTestData($request);
-            }
-
-            if (config('lara-pay-ng.gateways.driver') == 'cashenvoy') {
-                $transactionData = $this->cashEnvoyTestData($request);
-            }
-
-            if (config('lara-pay-ng.gateways.driver') == 'webpay') {
-                $transactionData = $this->webPayTestData($request);
-            }
+//            $transactionData = $this->testTransactionData($request);
+            $transactionData = $this->allInOneTestData($request);
 
             $merchantRef = $this->paymentGateway->logTransaction($transactionData);
 
             $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData), true);
 
-            return view('payment.confirm', compact('transactionData', 'merchantRef', 'items'));
+            return view('vendor.lara-pay-ng.confirm', compact('transactionData', 'merchantRef', 'items'));
 
         } catch (UnspecifiedTransactionAmountException $e){
+            dd($e);
             // Handle This Exception However you please
             // Shouldn't Ever Occur If you Do the Implementation Correctly
         } catch (UnknownPaymentGatewayException $e){
+
+            dd($e);
             // Handle This Exception However you please
             // Shouldn't Ever Occur If you Choose One of the Supported Gateways and Spell It right
         }
@@ -103,9 +97,12 @@ class PaymentController extends Controller
 
     public function notification($mert_id, Request $request)
     {
+//        dd($request->header('origin'));
 
         // For Situations Where a Not you prefer a Notification Url Other than Your Success or Fail Url Directly
         $result = $this->handleTransactionResponse($mert_id, $request);
+
+        $this->dispatchAppropriateEvents($result);
 
         return $this->determineViewToPresent($result);
     }
@@ -122,6 +119,8 @@ class PaymentController extends Controller
     {
         $result = $this->handleTransactionResponse($mert_id, $request);
 
+        $this->dispatchAppropriateEvents($result);
+
         return view(config('lara-pay-ng.gateways.routes.success_view_name'), compact('result'));
     }
 
@@ -137,6 +136,8 @@ class PaymentController extends Controller
     {
         $result = $this->handleTransactionResponse($mert_id, $request);
 
+        $this->dispatchAppropriateEvents($result);
+
         return view(config('lara-pay-ng.gateways.routes.failure_view_name'), compact('result'));
     }
 
@@ -151,7 +152,35 @@ class PaymentController extends Controller
     {
         $data = $request->all();
 
-        $result = $this->paymentGateway->receiveTransactionResponse($data, $mert_id);
+        $origin = $request->header('origin');
+
+        switch($origin) {
+            case str_contains($origin, 'gtbank'):
+                $result = GTPay::receiveTransactionResponse($data, $mert_id);
+                break;
+
+            case str_contains($origin, 'voguepay'):
+                $result = VoguePay::receiveTransactionResponse($data, $mert_id);
+                break;
+
+            case str_contains($origin, 'simplepay'):
+                $result = SimplePay::receiveTransactionResponse($data, $mert_id);
+                break;
+
+            case str_contains($origin, 'cashenvoy'):
+                $result = CashEnvoy::receiveTransactionResponse($data, $mert_id);
+                break;
+
+            case str_contains($origin, 'webpay'):
+                $result = WebPay::receiveTransactionResponse($data, $mert_id);
+                break;
+
+            default:
+                $result = $this->paymentGateway->receiveTransactionResponse($data, $mert_id);
+
+                break;
+        }
+
 
         /*********************************
          * $result contains all information regarding the transaction, This would be a perfect
@@ -165,24 +194,4 @@ class PaymentController extends Controller
 
         return $result;
     }
-
-    /**
-     * @param $result
-     *
-     * @return \Illuminate\View\View
-     */
-    private function determineViewToPresent($result)
-    {
-        switch ($result['status']){
-            case 'Approved':
-            case 'Approved by Financial Institution':
-                return view(config('lara-pay-ng.gateways.routes.success_view_name'), compact('result'));
-                break;
-
-            default:
-                return view(config('lara-pay-ng.gateways.routes.failure_view_name'), compact('result'));
-                break;
-        }
-    }
-
 }

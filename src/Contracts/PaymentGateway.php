@@ -29,6 +29,9 @@ interface PaymentGateway
 
     /**
      *
+     * @param $transactionData
+     * @param $mertId
+     *
      * @return mixed
      */
     public function receiveTransactionResponse($transactionData, $mertId);
@@ -52,6 +55,33 @@ interface PaymentGateway
      * @return mixed
      */
     public function config($key);
+
+
+    /**
+     *
+     * Get All Transactions
+     *
+     * @return mixed
+     */
+    public function viewAllTransactions();
+
+    /**
+     *
+     * Get All Failed Transactions
+     *
+     * @return mixed
+     */
+    public function viewFailedTransactions();
+
+    /**
+     *
+     * Get All Successful Transactions
+     *
+     * @return mixed
+     */
+    public function viewSuccessfulTransactions();
+
+
 
 
 //    /**

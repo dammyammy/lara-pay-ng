@@ -14,27 +14,17 @@ class CreateCashenvoyTransactionsTable extends Migration
     {
         Schema::create('cashenvoy_transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
-//            $table->string('merchant_ref')->nullable();
-//            $table->string('v_transaction_id')->nullable();
-//            $table->float('v_total', 15, 4)->nullable();
-//            $table->float('v_total_paid', 15, 4)->nullable();
-//            $table->float('v_total_credited', 15, 4)->nullable();
-//            $table->float('v_extra_charges', 10, 4)->nullable();
-//            $table->string('v_pay_method')->nullable();
-//            $table->string('v_fund_maturity')->nullable();
-//            $table->string('v_email')->nullable();
-//            $table->float('v_merchant_charges', 10, 4)->nullable();
-//            $table->float('v_process_duration', 6, 4)->nullable();
-//            $table->float('total', 15, 4);
-//            $table->json('items');
-//            $table->string('store_id')->nullable();
-//            $table->string('payer_id')->nullable();
-//            $table->boolean('recurrent')->default(0);
-//            $table->integer('interval')->nullable();
-//            $table->text('memo')->nullable();
-//            $table->string('referrer')->nullable();
-//            $table->string('status')->default('Pending');
-//            $table->timestamp('paid_at')->nullable();
+            $table->string('ce_transref')->nullable();
+            $table->string('transaction_id')->nullable();
+            $table->float('ce_amount', 15, 4)->nullable();
+            $table->string('ce_type')->nullable();
+            $table->float('amount', 15, 4)->default(0.00);
+            $table->json('items');
+            $table->string('ce_customerid')->nullable();
+            $table->text('ce_memo')->nullable();
+            $table->string('status')->default('Pending');
+            $table->string('response_code')->nullable();
+            $table->string('response_description')->default('Pending');
             $table->timestamps();
             $table->softDeletes();
 

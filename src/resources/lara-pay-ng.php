@@ -8,10 +8,19 @@ return [
         |--------------------------------------------------------------------------
         | Supported Payment Gateways
         |--------------------------------------------------------------------------
-        | We Currently Support The following  GTPay, VoguePay & WebPay
+        | We Currently Support The following:  GTPay, VoguePay, SimplePay & CashEnvoy
         */
 
-        'driver' => 'voguepay',
+        'driver' => 'GTPay',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Testing
+        |--------------------------------------------------------------------------
+        | If set to false, We would assume Production and route to right Gateway URL
+        */
+//
+//        'testing' => true,
 
         /*
         |--------------------------------------------------------------------------
@@ -22,19 +31,15 @@ return [
         | the Product Id for the product/service being sold.
         | eg. COMPANY130003003PRODUCT + 121 = COMPANY130003003PRODUCT121.
         | We Specified a Sensible Default, Change as Appropriate
-        */
-
-        'transactionIdPrefix' => 'COMPANY-' . time() . '-PRODUCT-',
-
-        /*
-        |--------------------------------------------------------------------------
-        | Unique Merchant Reference  Prefix
-        |--------------------------------------------------------------------------
-        | A Unique Merchant Reference Needs to be Generated for each (VoguePay) Transaction.
         |
+        |
+        |--------------------------------------------------------------------------
+        | Unique Transaction Reference Prefix FOR CASHENVOY (ONLY ALPHANUMERIC NO SYMBOLS)
+        |--------------------------------------------------------------------------
+        | A Unique Transaction Reference Needs to be Generated for each (cashenvoy) Transaction.
         */
 
-        'MerchantReferencePrefix' => 'COMPANY-REF-' . time() . '-',
+        'transactionIdPrefix' => 'REF' . time() . 'TRAN',
 
 
         /*
@@ -47,11 +52,11 @@ return [
         'routes' => [
             'success_route'            => 'transaction-successful', // Route::get('thank_you');
             'success_route_name'       => 'transaction-successful', // Route::get('thank_you', ['as' => 'thank_you']);
-            'success_view_name'        => 'payment.successful', // View::make('frontend.success');
+            'success_view_name'        => 'vendor.lara-pay-ng.successful', // View::make('frontend.success');
 
             'failure_route'            => 'transaction-failed', // Route::get('failed');
             'failure_route_name'       => 'transaction-failed', // Route::get('failed', ['as' => 'failed']);
-            'failure_view_name'        => 'payment.failed', // View::make('frontend.success');
+            'failure_view_name'        => 'vendor.lara-pay-ng.failed', // View::make('frontend.success');
 
 
         ],
@@ -68,10 +73,10 @@ return [
 
         'gtpay'     => [
             'gtpay_mert_id'          => env('GTPAY_MERCHANT_ID', 'GTBxxxxxxxxxxxx'),
-            'gtpay_tranx_curr'       => env('CURRENCY', '566'),
+            'gtpay_tranx_curr'       => env('CURRENCY', '₦'),
             'gtpay_no_show_gtbank'   => 'yes',
             'gtpay_gway_first'       => 'no', // yes or no
-            'gtpay_gway_name'       =>  null, // webpay or migs or null if no is specified gway_first
+            'gtpay_gway_name'       =>  null, // webpay, ibank or migs or null if no is specified gway_first
             'hashkey'                => env('GTPAY_HASH_KEY', 'Your Insanely Long HashKey from GTB'),
             'gtpay_tranx_noti_url'   => env('GTPAY_REDIRECT_URL', 'payment-notification'),
             'gatewayUrl'             => 'https://ibank.gtbank.com/GTPay/Tranx.aspx',
@@ -93,7 +98,7 @@ return [
 
         'webpay'     => [
             'mert_id'           => env('WEBPAY_MERCHANT_ID', 'xxxxx'),
-            'currency'          => env('CURRENCY', '566'),
+            'currency'          => env('CURRENCY', '₦'),
             'hashkey'           => env('WEBPAY_HASH_KEY', 'Your Insanely Long HashKey from Interswitch'),
             'site_redirect_url' => env('WEBPAY_REDIRECT_URL', 'payment-notification'),
             'gatewayUrl'        => 'https://stageserv.interswitchng.com/test_paydirect',
@@ -133,7 +138,7 @@ return [
         */
 
         'simplepay'     => [
-            'member'            => env('SIMPLEPAY_MERCHANT_ID', 'demo'),
+            'member'            => env('SIMPLEPAY_MERCHANT_ID', 'UG7K3RD046240'),
             'site_logo'         => env('SIMPLEPAY_LOGO_URL', 'http://placehold.it/300/300.png'),
             'submitButton'      => 'simplepaylogo.gif',
             'CMAccountid'       => env('SIMPLEPAY_COMMISION_ID', null),
@@ -151,25 +156,21 @@ return [
         |--------------------------------------------------------------------------
         | CashEnvoy by CashEnvoy Nigeria Settings
         |--------------------------------------------------------------------------
-        |
+        | https://www.cashenvoy.com/webservice/ for production
         */
 
         'cashenvoy'     => [
-            'v_merchant_id'     => env('CASHENVOY_MERCHANT_ID', 'demo'),
-            'developer_code'    => env('CASHENVOY_DEV_CODE', 'demo'),
-            'submitButton'      => 'buynow_red.png',
-            'store_id'          => env('CASHENVOY_STORE_ID', '1'),
-            'notify_url'        => env('CASHENVOY_REDIRECT_URL', 'payment-notification'),
-            'fail_url'          => env('CASHENVOY_REDIRECT_URL', 'transaction-failed'),
-            'success_url'       => env('CASHENVOY_REDIRECT_URL', 'transaction-successful'),
+            'ce_merchantid'     => env('CASHENVOY_MERCHANT_ID', '2403'),
+            'ce_key'            => env('CASHENVOY_KEY', 'f65bc0f4e5bc72913701e38223471c71'),
+            'ce_notifyurl'      => env('CASHENVOY_REDIRECT_URL', 'payment-notification'),
+            'icon'              => 'https://www.cashenvoy.com/images/paybt.jpeg',
+            'ce_window'         => 'self', //parent
 
-
-            'gatewayUrl'        => 'https://cashenvoy.com/pay/',
+            'gatewayUrl'        => 'https://www.cashenvoy.com/sandbox/',
 
             'table'             => 'cashenvoy_transactions',
-
-        ]
-
+        ],
 
     ]
+
 ];
