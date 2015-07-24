@@ -19,38 +19,38 @@
     </section>
 
     <section class="main-content">
-      <h1>
-<a id="nigerian-payment-gateway-solution-for-laravel-5" class="anchor" href="#nigerian-payment-gateway-solution-for-laravel-5" aria-hidden="true"><span class="octicon octicon-link"></span></a>Nigerian Payment Gateway Solution for Laravel 5</h1>
+      <p><em>Supports Multiple Gateways with a single API approach, meaning Integration is the same across board in code.</em></p>
 
-<ul>
-<li>Supports Multiple Gateways with a single API approach, meaning Integration is the same across board in code</li>
-</ul>
+<p><em>Note:</em> Do Not Use In Production, Currently being developed to be compatible with the latest version of Laravel. </p>
 
-<p>*** Do Not Use, Currently being developed to be compatible with the latest version of Laravel.</p>
+<p>The Aim is to Integrate as many Payment Gateways As Possible.</p>
 
-<p>Aiming to Integrate as much Payment Gateways As Possible</p>
+<h1>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements</h1>
 
-<p>Currently Supported</p>
+<h1>
+<a id="currently-supported" class="anchor" href="#currently-supported" aria-hidden="true"><span class="octicon octicon-link"></span></a>Currently Supported</h1>
 
 <ul>
 <li>VoguePay</li>
 <li>GTPay</li>
-</ul>
-
-<p>Gateways Currently being Looked at (In development)</p>
-
-<ul>
-<li>WebPay</li>
 <li>CashEnvoy</li>
 <li>SimplePay</li>
 </ul>
 
 <h1>
-<a id="to-install" class="anchor" href="#to-install" aria-hidden="true"><span class="octicon octicon-link"></span></a>To Install</h1>
+<a id="gateways-currently-in-development" class="anchor" href="#gateways-currently-in-development" aria-hidden="true"><span class="octicon octicon-link"></span></a>Gateways Currently In development</h1>
+
+<ul>
+<li>WebPay</li>
+</ul>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
 
 <p>Simply Run</p>
 
-<div class="highlight highlight-bash"><pre>    composer require dammyammy/lara-pay-ng</pre></div>
+<div class="highlight highlight-shell"><pre>    composer require dammyammy/lara-pay-ng</pre></div>
 
 <p>Next Add the Service Provider into your Providers Array in config/app.php</p>
 
@@ -69,21 +69,22 @@
 
 <p>Next Publish All Package Files</p>
 
-<div class="highlight highlight-shell"><pre>    php artisan vendor:publish</pre></div>
+<div class="highlight highlight-shell"><pre>php artisan vendor:publish</pre></div>
 
 <p>This Would create the following:</p>
 
-<pre><code>1. A **PaymentController** in app/Http/Controllers/PaymentController.php
-(i.e This is a working Sample, you may need to change Namespace to match your Projects namespace)
-
-2. **Migrations** would be published to database/migrations
-
-3. 4 Views, matching the Controller
-    - one with a simulated checkout out button
-    - one is the proceed to pay page (Pay Now Button)
-    - one is a success notification Url, Showing a Successful Transaction
-    - one is a failure notification Url, Showing a Failed Transaction
-</code></pre>
+<ol>
+<li>A <em>PaymentController</em> in <em>app/Http/Controllers/PaymentController.php</em><br>
+</li>
+<li>Note: This is a working Sample, you may need to change Namespace to match your Projects namespace</li>
+<li>
+<em>Migrations</em> would be published to folder database/migrations</li>
+<li>4 Views, matching the Controller</li>
+<li>one with a simulated checkout out button</li>
+<li>one is the proceed to pay page (Pay Now Button)</li>
+<li>one is a success notification Url, Showing a Successful Transaction</li>
+<li>one is a failure notification Url, Showing a Failed Transaction</li>
+</ol>
 
 <p>Next Add the following to your routes page in app/Http/routes.php and edit as you seem fit, But be sure specified values match Your Config file</p>
 
@@ -121,183 +122,334 @@
 <h1>
 <a id="remember-to-disallow-csrf-token-verification-for-your-payment-routes" class="anchor" href="#remember-to-disallow-csrf-token-verification-for-your-payment-routes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Remember to Disallow CSRF Token Verification for your payment routes</h1>
 
-<p>This is perhaps one of the use cases in which u need to absolutely do this.</p>
+<p>This is perhaps one of the use cases in which u need to absolutely do this. If this is not done, When a Transaction Id is been sent back your site would throw a TokenMismatchException, as the Gateway Provider is posting back, and doesn't have a token Generated from your app.</p>
 
-<p>Else When a Transaction Id is been sent back Your site would throw a TokenMismatchException</p>
+<p>Use the appropriate route endpoints if you did change the default names and urls.</p>
 
-<p>As the Gateway Provider is posting back, and doesn't have a token Generated from your app</p>
-
-<p>Use the appropriate route endpoints if you did change the default names and urls</p>
-
-<div class="highlight highlight-php"><pre><span class="pl-s1">    <span class="pl-k">&lt;</span>?<span class="pl-c1">php</span></span>
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">namespace</span> <span class="pl-en">App\Http\Middleware</span>;</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-k">namespace</span> <span class="pl-en">App\Http\Middleware</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Illuminate\Foundation\Http\Middleware\VerifyCsrfToken</span> <span class="pl-k">as</span> <span class="pl-c1">BaseVerifier</span>;</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-k">use</span> <span class="pl-c1">Illuminate\Foundation\Http\Middleware\VerifyCsrfToken</span> <span class="pl-k">as</span> <span class="pl-c1">BaseVerifier</span>;</span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">VerifyCsrfToken</span> <span class="pl-k">extends</span> <span class="pl-e">BaseVerifier</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1">    <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">    * The URIs that should be excluded from CSRF verification.</span></span>
+<span class="pl-s1"><span class="pl-c">    *</span></span>
+<span class="pl-s1"><span class="pl-c">    * <span class="pl-k">@var</span> array</span></span>
+<span class="pl-s1"><span class="pl-c">    */</span></span>
+<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$except</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>transaction-failed/*<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>transaction-successful/*<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>payment-notification/*<span class="pl-pds">'</span></span>,</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-k">class</span> <span class="pl-en">VerifyCsrfToken</span> <span class="pl-k">extends</span> <span class="pl-e">BaseVerifier</span></span>
-<span class="pl-s1">    {</span>
-<span class="pl-s1">        <span class="pl-c">/**</span></span>
-<span class="pl-s1"><span class="pl-c">         * The URIs that should be excluded from CSRF verification.</span></span>
-<span class="pl-s1"><span class="pl-c">         *</span></span>
-<span class="pl-s1"><span class="pl-c">         * <span class="pl-k">@var</span> array</span></span>
-<span class="pl-s1"><span class="pl-c">         */</span></span>
-<span class="pl-s1">        <span class="pl-k">protected</span> <span class="pl-smi">$except</span> <span class="pl-k">=</span> [</span>
-<span class="pl-s1">            <span class="pl-c">//</span></span>
-<span class="pl-s1"></span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>transaction-failed/*<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>transaction-successful/*<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>payment-notification/*<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1"></span>
-<span class="pl-s1">        ];</span>
-<span class="pl-s1">    }</span></pre></div>
+<span class="pl-s1">    ];</span>
+<span class="pl-s1">}</span></pre></div>
 
 <p>Next Migrate the Package Tables.</p>
 
-<div class="highlight highlight-shell"><pre>    php artisan migrate
-</pre></div>
+<div class="highlight highlight-shell"><pre>php artisan migrate</pre></div>
 
 <p>Next, Test the default Controller by visiting /Orders and follow through.</p>
 
-<p>The Important thing to note is, to Inject the Payment Functionality into a controller,
-all you need do is to Inject the PaymentGatewayManager Class into that controller, and you
-Instantly gain access to all the methods provided by the facades below.</p>
+<p>The Important thing to note is, to Inject the Payment Functionality into a controller, all you need do is to Inject the PaymentGatewayManager Class into that controller, and you instantly gain access to all the methods provided by the facades below.</p>
 
-<div class="highlight highlight-php"><pre><span class="pl-s1">    <span class="pl-k">use</span> <span class="pl-c1">LaraPayNG\Exceptions\UnknownPaymentGatewayException</span>;</span>
-<span class="pl-s1">    <span class="pl-k">use</span> <span class="pl-c1">LaraPayNG\Managers\PaymentGatewayManager</span>;</span>
+<div class="highlight highlight-php"><pre><span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">LaraPayNG\Exceptions\UnknownPaymentGatewayException</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">LaraPayNG\Managers\PaymentGatewayManager</span>;</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-k">class</span> <span class="pl-en">PaymentController</span> <span class="pl-k">extends</span> <span class="pl-e">Controller</span></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">PaymentController</span> <span class="pl-k">extends</span> <span class="pl-e">Controller</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1">    <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">    * <span class="pl-k">@var</span> PaymentGateway</span></span>
+<span class="pl-s1"><span class="pl-c">    */</span></span>
+<span class="pl-s1">    <span class="pl-k">private</span> <span class="pl-smi">$paymentGateway</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">    * <span class="pl-k">@param</span> PaymentGatewayManager $paymentGateway</span></span>
+<span class="pl-s1"><span class="pl-c">    */</span></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-c1">__construct</span>(<span class="pl-c1">PaymentGatewayManager</span> <span class="pl-smi">$paymentGateway</span>)</span>
 <span class="pl-s1">    {</span>
-<span class="pl-s1">        <span class="pl-c">/**</span></span>
-<span class="pl-s1"><span class="pl-c">         * <span class="pl-k">@var</span> PaymentGateway</span></span>
-<span class="pl-s1"><span class="pl-c">         */</span></span>
-<span class="pl-s1">        <span class="pl-k">private</span> <span class="pl-smi">$paymentGateway</span>;</span>
-<span class="pl-s1"></span>
-<span class="pl-s1"></span>
-<span class="pl-s1">        <span class="pl-c">/**</span></span>
-<span class="pl-s1"><span class="pl-c">         * <span class="pl-k">@param</span> PaymentGatewayManager $paymentGateway</span></span>
-<span class="pl-s1"><span class="pl-c">         */</span></span>
-<span class="pl-s1">        <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-c1">__construct</span>(<span class="pl-c1">PaymentGatewayManager</span> <span class="pl-smi">$paymentGateway</span>)</span>
-<span class="pl-s1">        {</span>
-<span class="pl-s1">            <span class="pl-smi">$this</span><span class="pl-k">-&gt;</span><span class="pl-smi">paymentGateway</span> <span class="pl-k">=</span> <span class="pl-smi">$paymentGateway</span>;</span>
-<span class="pl-s1">        }</span>
-<span class="pl-s1"></span>
-<span class="pl-s1">        <span class="pl-k">....</span></span>
-<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-smi">$this</span><span class="pl-k">-&gt;</span><span class="pl-smi">paymentGateway</span> <span class="pl-k">=</span> <span class="pl-smi">$paymentGateway</span>;</span>
 <span class="pl-s1">    }</span>
 <span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">....</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1"></span></pre></div>
+<span class="pl-s1">}</span></pre></div>
 
 <h1>
 <a id="facades" class="anchor" href="#facades" aria-hidden="true"><span class="octicon octicon-link"></span></a>Facades</h1>
 
-<pre><code>Facades         Namespace                                   When To Use Which Facade
+<table>
+<thead>
+<tr>
+<th>Facades</th>
+<th>Namespace</th>
+<th>When To Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pay::</td>
+<td>\LaraPayNG\Facades\Pay</td>
+<td>Use If You want To Swap Gateways Through Config.</td>
+</tr>
+<tr>
+<td>GTPay::</td>
+<td>\LaraPayNG\Facades\GTPay</td>
+<td>Use If You Specifically want the GTPay Gateway Implementation.</td>
+</tr>
+<tr>
+<td>WebPay::</td>
+<td>\LaraPayNG\Facades\WebPay</td>
+<td>Use If You Specifically want the WebPay Gateway Implementation.</td>
+</tr>
+<tr>
+<td>VoguePay::</td>
+<td>\LaraPayNG\Facades\VoguePay</td>
+<td>Use If You Specifically want the VoguePay Gateway Implementation.</td>
+</tr>
+<tr>
+<td>CashEnvoy::</td>
+<td>\LaraPayNG\Facades\CashEnvoy</td>
+<td>Use If You Specifically want the CashEnvoy Gateway Implementation.</td>
+</tr>
+<tr>
+<td>SimplePay::</td>
+<td>\LaraPayNG\Facades\SimplePay</td>
+<td>Use If You Specifically want the SimplePay Gateway Implementation.</td>
+</tr>
+</tbody>
+</table>
 
-Pay::           \LaraPayNG\Facades\Pay            Use If You want To Swap Gateways Through Config.
-GTPay::         \LaraPayNG\Facades\GTPay          Use If You Specifically want GTPay Gateway.
-WebPay::        \LaraPayNG\Facades\WebPay         Use If You Specifically want WebPay Gateway.
-VoguePay::       \LaraPayNG\Facades\VoguePay      Use If You Specifically want VoguePay Gateway.
-</code></pre>
+<h2>
+<a id="methods-available-via-facades--paymentgatewaymanager-injection" class="anchor" href="#methods-available-via-facades--paymentgatewaymanager-injection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Methods Available Via Facades / PaymentGatewayManager Injection</h2>
+
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>What it is Meant For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>button($transactionId, $transactionData, $class, $buttonTitle)</td>
+<td>To create Pay Now Button For Set Gateway In a View.</td>
+</tr>
+<tr>
+<td>logTransaction($transactionData)</td>
+<td>To Store Data Transaction Being Made for future Reference.</td>
+</tr>
+<tr>
+<td>receiveTransactionResponse($transactionId, $mertId)</td>
+<td>To Get Transaction Response back from Gateway.</td>
+</tr>
+<tr>
+<td>logResponse($transactionData)</td>
+<td>To Store Transaction Response from Gateway.</td>
+</tr>
+<tr>
+<td>getDefaultDriver()</td>
+<td>To get Default Payment Gateway Driver At Runtime.</td>
+</tr>
+<tr>
+<td>with($name)</td>
+<td>To set Default Payment Gateway Driver At Runtime..</td>
+</tr>
+<tr>
+<td>config($key)</td>
+<td>Access Config Off Set Default Payment Gateway Driver.</td>
+</tr>
+</tbody>
+</table>
 
 <h1>
-<a id="methods-available-via-facades--paymentgatewaymanager-injection" class="anchor" href="#methods-available-via-facades--paymentgatewaymanager-injection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Methods Available Via Facades / PaymentGatewayManager Injection</h1>
+<a id="events" class="anchor" href="#events" aria-hidden="true"><span class="octicon octicon-link"></span></a>Events</h1>
 
-<pre><code>Method                                                               What it is Meant For
+<table>
+<thead>
+<tr>
+<th>Event Name</th>
+<th>Full Event Namespace</th>
+<th>When It is Thrown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TransactionSuccessful</td>
+<td>\LaraPayNG\Events\TransactionSuccessful</td>
+<td>When A Transaction is deemed successful</td>
+</tr>
+<tr>
+<td>TransactionUnsuccessful</td>
+<td>\LaraPayNG\Events\TransactionUnsuccessful</td>
+<td>When A Transaction is deemed unsuccessful</td>
+</tr>
+</tbody>
+</table>
 
-payButton($transactionId, $transactionData, $class, $buttonTitle)   To create Pay Now Button For Set Gateway In a View.
-logTransaction($transactionData)                                    To Store Data Transaction Being Made for future Reference.
-receiveTransactionResponse($transactionId, $mertId)                 To Get Transaction Response back from Gateway
-logResponse($transactionData)                                       To Store Transaction Response from Gateway.
+<p>Throwing this Events are optional, but helps serve as a hook for how you handle Completed Transactions.Take these Example Scenarios When you would Like to</p>
 
-getDefaultDriver()                                                  To get Default Payment Gateway Driver At Runtime.
-setDefaultDriver($name)                                             To set Default Payment Gateway Driver At Runtime..
-config($key)                                                        Access Config Off Set Default Payment Gateway Driver.
-</code></pre>
+<ol>
+<li>Send A customer an Email to notify them of their recent Transaction Status.</li>
+<li>You want to Set a person's account to active in the User's Table after a successful Transaction.</li>
+<li>You Want to add Paying Customer's to your Paying Customer's Mailer List.</li>
+</ol>
+
+<p>The possibilities are endless, All you have to do is to Pull in the \LaraPayNG\Traits\DetermineTransactionStatus Trait and call the dispatchAppropriateEvents($result); method within your controller. e.g.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s1"><span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">notification</span>(<span class="pl-smi">$mert_id</span>, <span class="pl-c1">Request</span> <span class="pl-smi">$request</span>) {</span>
+<span class="pl-s1">    <span class="pl-smi">$result</span> <span class="pl-k">=</span> <span class="pl-smi">$this</span><span class="pl-k">-&gt;</span>handleTransactionResponse(<span class="pl-smi">$mert_id</span>, <span class="pl-smi">$request</span>);</span>
+<span class="pl-s1">    <span class="pl-smi">$this</span><span class="pl-k">-&gt;</span>dispatchAppropriateEvents(<span class="pl-smi">$result</span>);</span>
+<span class="pl-s1">    <span class="pl-k">return</span> <span class="pl-smi">$this</span><span class="pl-k">-&gt;</span>determineViewToPresent(<span class="pl-smi">$result</span>);</span>
+<span class="pl-s1">}</span></pre></div>
+
+<p>Then Simply Create Event Listeners in app/Providers/EventServiceProvider.php</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">namespace</span> <span class="pl-en">App\Providers</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Illuminate\Contracts\Events\Dispatcher</span> <span class="pl-k">as</span> <span class="pl-c1">DispatcherContract</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Illuminate\Foundation\Support\Providers\EventServiceProvider</span> <span class="pl-k">as</span> <span class="pl-c1">ServiceProvider</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">EventServiceProvider</span> <span class="pl-k">extends</span> <span class="pl-e">ServiceProvider</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1">    <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">    * The event listener mappings for the application.</span></span>
+<span class="pl-s1"><span class="pl-c">    *</span></span>
+<span class="pl-s1"><span class="pl-c">    * <span class="pl-k">@var</span> array</span></span>
+<span class="pl-s1"><span class="pl-c">    */</span></span>
+<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$listen</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>LaraPayNG\Events\TransactionSuccessful<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">            <span class="pl-c">// 'App\Listeners\SendEmailForSuccessfulTransactions',</span></span>
+<span class="pl-s1">            <span class="pl-c">// 'App\Listeners\ActivateUser',</span></span>
+<span class="pl-s1">        ],</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>LaraPayNG\Events\TransactionUnsuccessful<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">            <span class="pl-c">// 'App\Listeners\DeactivateUser',</span></span>
+<span class="pl-s1">        ],</span>
+<span class="pl-s1">    ];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">....</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<p>Finally, Create Your Listener Implementations Knowing you have access to an array result containing values needed. An example implementation is written below:</p>
+
+<blockquote>
+<p>File: app/Listeners/ActivateUser.php</p>
+</blockquote>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">namespace</span> <span class="pl-en">App\Listeners</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">LaraPayNG\Events\TransactionSuccessful</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">App\User</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">ActivateUser</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1">    <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">    * Handle the event.</span></span>
+<span class="pl-s1"><span class="pl-c">    *</span></span>
+<span class="pl-s1"><span class="pl-c">    * <span class="pl-k">@param</span>  ActivateUser  $event</span></span>
+<span class="pl-s1"><span class="pl-c">    * <span class="pl-k">@return</span> void</span></span>
+<span class="pl-s1"><span class="pl-c">    */</span></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">handle</span>(<span class="pl-c1">ActivateUser</span> <span class="pl-smi">$event</span>) {</span>
+<span class="pl-s1">         <span class="pl-c">// All Values Below are available</span></span>
+<span class="pl-s1">         <span class="pl-c">// $event['status'],</span></span>
+<span class="pl-s1">         <span class="pl-c">// $event['items'],</span></span>
+<span class="pl-s1">         <span class="pl-c">// $event['transaction_id'],</span></span>
+<span class="pl-s1">         <span class="pl-c">// $event['merchant_ref'],</span></span>
+<span class="pl-s1">         <span class="pl-c">// $event['amount'],</span></span>
+<span class="pl-s1">         <span class="pl-c">// $event['customer_id'],</span></span>
+<span class="pl-s1">         <span class="pl-c">// $event['payer_id'],</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-smi">$user</span> <span class="pl-k">=</span> <span class="pl-c1">User</span><span class="pl-k">::</span>find(<span class="pl-smi">$event</span>[<span class="pl-s"><span class="pl-pds">'</span>customer_id<span class="pl-pds">'</span></span>]);</span>
+<span class="pl-s1">        <span class="pl-smi">$user</span><span class="pl-k">-&gt;</span><span class="pl-smi">activate</span> <span class="pl-k">=</span> <span class="pl-c1">true</span>;</span>
+<span class="pl-s1">        <span class="pl-smi">$user</span><span class="pl-k">-&gt;</span>save();</span>
+<span class="pl-s1">        <span class="pl-k">return</span> <span class="pl-c1">true</span>;</span>
+<span class="pl-s1">    }</span>
+<span class="pl-s1">}</span></pre></div>
 
 <h1>
 <a id="exceptions" class="anchor" href="#exceptions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Exceptions</h1>
 
-<pre><code>All Exceptions Exist Under This Namespace;;
+<p>All Exceptions Exist Under This Namespace;</p>
 
-```php
+<div class="highlight highlight-php"><pre><span class="pl-s1">    <span class="pl-k">namespace</span> <span class="pl-en">\LaraPayNG\Exceptions</span>;</span></pre></div>
 
-    namespace \LaraPayNG\Exceptions;
-```
-
-Exceptions                                  When It is Thrown
-
-UnknownPaymentGatewayException              If set Driver for Default Gateway is unknown or unsupported.
-UnspecifiedTransactionAmountException       If amount(WebPay) | gtpay_tranx_amt(GTPay) is not in $transactionData.
-UnspecifiedPayItemIdException               If pay_item_id is unspecifed in $transactionData array (GTPay)
-PaymentGatewayVerificationFailedException   If Hash Calculation is Wrong During Verification ( Applies to GTPay/WebPay Gateway ).
-</code></pre>
+<table>
+<thead>
+<tr>
+<th>Exceptions</th>
+<th>When It is Thrown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UnknownPaymentGatewayException</td>
+<td>If set Driver for Default Gateway is unknown or unsupported.</td>
+</tr>
+<tr>
+<td>UnspecifiedTransactionAmountException</td>
+<td>If amount(WebPay) / gtpay_tranx_amt(GTPay) is not in $transactionData.</td>
+</tr>
+<tr>
+<td>UnspecifiedPayItemIdException</td>
+<td>If pay_item_id is unspecifed in $transactionData array (GTPay).</td>
+</tr>
+<tr>
+<td>PaymentGatewayVerificationFailedException</td>
+<td>If Hash Calculation is Wrong During Verification (Applies to GTPay/WebPay Gateway ).</td>
+</tr>
+</tbody>
+</table>
 
 <h1>
 <a id="commands" class="anchor" href="#commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Commands</h1>
 
-<pre><code>There is a Command to Help Clear Stale Records That have been logged within a set number of days
+<p>There is a Command to Help Clear Stale Records That have been logged within a set number of days. To Use Simply Type in your terminal</p>
 
-To Use Simply Type in your terminal
+<div class="highlight highlight-shell"><pre><span class="pl-c"># php artisan lara-pay-ng:purge-database gatewayname --days=3 --with-failed=false</span>
+php artisan lara-pay-ng:purge-database</pre></div>
 
-```bash
+<p>You can Pass the gatewayname attribute to the Command eg. gtpay, voguepay. This is particularly useful for Multi-gateway Setups.</p>
 
-    # php artisan lara-pay-ng:purge-database gatewayname --days=3 --with-failed=false
-    php artisan lara-pay-ng:purge-database
+<p>In the event of not passing the option, the default gateway driver from set config would be used.</p>
 
-```
-
-You can Pass the gatewayname attribute to the Command eg. gtpay, voguepay. This is particularly useful for Multi-gateway Setups
-In the event of not passing the option, the default gateway driver from set config would be used.
-
-It also can be passed a --with-failed option which accepts true/false. True means all Transactions that failed should be included in the deletion,
-as well as a --days option specifying how many days back data is considered old.
-</code></pre>
+<p>It also can be passed a <em>--with-failed</em> option which accepts true/false. True means all Transactions that failed should be included in the deletion, as well as a <em>--days</em> option specifying how many days back data is considered old.</p>
 
 <h1>
 <a id="tips" class="anchor" href="#tips" aria-hidden="true"><span class="octicon octicon-link"></span></a>Tips</h1>
 
-<pre><code>    Add Methods Like These to Your Helpers.php File then Autoload It In Your composer.json
+<p>Add Methods Like These to Your Helpers.php File then Autoload It In Your composer.json</p>
 
- ```php
+<div class="highlight highlight-php"><pre><span class="pl-s1"><span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">generateTransactionData</span>(<span class="pl-smi">$dessert</span>, <span class="pl-smi">$transactionId</span>) {</span>
+<span class="pl-s1">    <span class="pl-k">return</span> <span class="pl-s"><span class="pl-pds">'</span>name=<span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-smi">$dessert</span><span class="pl-k">-&gt;</span>present()<span class="pl-k">-&gt;</span><span class="pl-smi">name</span> <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>;pre=<span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-smi">$dessert</span><span class="pl-k">-&gt;</span>present()<span class="pl-k">-&gt;</span><span class="pl-smi">buyPrice</span> <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>;buyer=<span class="pl-pds">'</span></span> <span class="pl-k">.</span> currentUserName() <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>; transactionId=<span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-smi">$transactionId</span>;</span>
+<span class="pl-s1">}</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">generateTransactionMemo</span>(<span class="pl-smi">$product</span>) {</span>
+<span class="pl-s1">    <span class="pl-k">return</span> <span class="pl-s"><span class="pl-pds">'</span>Name: <span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-smi">$product</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span> <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>; Price: <span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-smi">$product</span><span class="pl-k">-&gt;</span><span class="pl-smi">price</span> <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>; Buyer: <span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-c1">Auth</span><span class="pl-k">::</span>user()<span class="pl-k">-&gt;</span><span class="pl-smi">email</span>;</span>
+<span class="pl-s1">}</span></pre></div>
 
-     public function generateTransactionData($dessert, $transactionId)
-     {
-         return 'name=' . $dessert-&gt;present()-&gt;name . ';pre=' . $dessert-&gt;present()-&gt;buyPrice
-         . ';buyer=' . currentUserName() . '; transactionId=' . $transactionId;
-     }
+<p>then You can easily Do</p>
 
+<div class="highlight highlight-php"><pre><span class="pl-s1"><span class="pl-smi">$product</span> <span class="pl-k">=</span> <span class="pl-c1">Product</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>2<span class="pl-pds">'</span></span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-smi">$transactionData</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>ce_amount<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$product</span><span class="pl-k">-&gt;</span><span class="pl-smi">price</span>,</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>ce_memo<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> generateTransactionMemo(<span class="pl-smi">$product</span>),</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">...</span></span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c1">CashEnvoy</span><span class="pl-k">::</span>button(<span class="pl-smi">$product</span><span class="pl-k">-&gt;</span><span class="pl-smi">id</span>, <span class="pl-smi">$transactionData</span>, <span class="pl-s"><span class="pl-pds">'</span>btn btn-success<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>&lt;i class="fa fa-currency"&gt;&lt;/i&gt; Pay<span class="pl-pds">'</span></span>);</span></pre></div>
 
-
-
-     public function generateTransactionMemo($product)
-     {
-         return 'Name: ' . $product-&gt;name . '; Price: ' . $product-&gt;price
-         . '; Buyer: ' . Auth::user()-&gt;email;
-     }
- ```
-
- then You can easily Do
-
- ```php
-    $product = Product::get('2');
-
-    $transactionData = [
-        'amount' =&gt; $product-&gt;price,
-        'memo' =&gt; generateTransactionMemo($product),
-        ...
-    ];
-
-    WebPay::payButton($product-&gt;id, $transactionData, 'btn btn-success', '&lt;i class="fa fa-currency"&gt;&lt;/i&gt; Pay Now');
-
- ```
-</code></pre>
-
-<p>## TODO</p>
+<h1>
+<a id="todo" class="anchor" href="#todo" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODO</h1>
 
 <ul>
 <li>Refactor Code</li>
-<li>Create a Simple Straightforward API</li>
 <li>Ability to Handle Transaction From Start to Finish</li>
 <li>Back everything up with Tests.</li>
 </ul>
