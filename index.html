@@ -1,45 +1,25 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>LaraPay NG by dammyammy</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-dark.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
+    <section class="page-header">
+      <h1 class="project-name">LaraPay NG</h1>
+      <h2 class="project-tagline">All in one Payment Solution For Laravel 5 (Nigerian Specific Providers e.g. GTPay, VoguePay, WebPay, SimplePay, CashEnvoy)</h2>
+      <a href="https://github.com/dammyammy/lara-pay-ng" class="btn">View on GitHub</a>
+      <a href="https://github.com/dammyammy/lara-pay-ng/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/dammyammy/lara-pay-ng/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-      <header>
-        <h1>LaraPay NG</h1>
-        <p>All in one Payment Solution For Laravel 5 (Nigerian Specific Providers e.g. GTPay, VoguePay, WebPay, SimplePay, CashEnvoy)</p>
-      </header>
-
-      <div id="banner">
-        <span id="logo"></span>
-
-        <a href="https://github.com/dammyammy/lara-pay-ng" class="button fork"><strong>View On GitHub</strong></a>
-        <div class="downloads">
-          <span>Downloads:</span>
-          <ul>
-            <li><a href="https://github.com/dammyammy/lara-pay-ng/zipball/master" class="button">ZIP</a></li>
-            <li><a href="https://github.com/dammyammy/lara-pay-ng/tarball/master" class="button">TAR</a></li>
-          </ul>
-        </div>
-      </div><!-- end banner -->
-
-    <div class="wrapper">
-      <nav>
-        <ul></ul>
-      </nav>
-      <section>
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="nigerian-payment-gateway-solution-for-laravel-5" class="anchor" href="#nigerian-payment-gateway-solution-for-laravel-5" aria-hidden="true"><span class="octicon octicon-link"></span></a>Nigerian Payment Gateway Solution for Laravel 5</h1>
 
 <ul>
@@ -70,34 +50,26 @@
 
 <p>Simply Run</p>
 
-<pre><code>
-    composer require dammyammy/lara-pay-ng
-
-</code></pre>
+<div class="highlight highlight-bash"><pre>    composer require dammyammy/lara-pay-ng</pre></div>
 
 <p>Next Add the Service Provider into your Providers Array in config/app.php</p>
 
-<pre><code>
-    'providers' =&gt; [
-
-        /*
-         * Laravel Framework Service Providers...
-         */
-        'Illuminate\Foundation\Providers\ArtisanServiceProvider',
-        'Illuminate\Auth\AuthServiceProvider',
-
-        ....
-
-        'LaraPayNG\Providers\LaraPayNGServiceProvider',
-    ],
-</code></pre>
+<div class="highlight highlight-php"><pre><span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>providers<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">         * Laravel Framework Service Providers...</span></span>
+<span class="pl-s1"><span class="pl-c">         */</span></span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>Illuminate\Foundation\Providers\ArtisanServiceProvider<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>Illuminate\Auth\AuthServiceProvider<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-k">....</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>LaraPayNG\Providers\LaraPayNGServiceProvider<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">    ],</span></pre></div>
 
 <p>Next Publish All Package Files</p>
 
-<pre><code>
-    php artisan vendor:publish
-
-</code></pre>
+<div class="highlight highlight-shell"><pre>    php artisan vendor:publish</pre></div>
 
 <p>This Would create the following:</p>
 
@@ -115,43 +87,36 @@
 
 <p>Next Add the following to your routes page in app/Http/routes.php and edit as you seem fit, But be sure specified values match Your Config file</p>
 
-<pre><code>
-    Route::get('orders',  [
-        'as' =&gt; 'orders',
-        'uses' =&gt; 'PaymentController@orders'
-    ]);
-
-
-    Route::get('checkout',  [
-        'as' =&gt; 'checkout',
-        'uses' =&gt; 'PaymentController@checkout'
-    ]);
-
-    $successUrl = config('lara-pay-ng.gateways.routes.success_route');
-    $successName = config('lara-pay-ng.gateways.routes.success_route_name');
-
-    $failureUrl = config('lara-pay-ng.gateways.routes.failure_route');
-    $failureName = config('lara-pay-ng.gateways.routes.failure_route_name');
-
-
-    Route::post('/' . $successUrl . '/{mert_id}', [
-        'as' =&gt; $successName,
-        'uses' =&gt; 'PaymentController@success'
-    ]);
-
-    Route::post('/' . $failureUrl . '/{mert_id}', [
-        'as' =&gt; $failureName,
-        'uses' =&gt; 'PaymentController@failed'
-    ]);
-
-    Route::post('/payment-notification/{mert_id}', [
-        'as' =&gt; 'payment-notification',
-        'uses' =&gt; 'PaymentController@notification'
-    ]);
-
-
-
-</code></pre>
+<div class="highlight highlight-php"><pre><span class="pl-s1">    <span class="pl-c1">Route</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>orders<span class="pl-pds">'</span></span>,  [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>as<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>orders<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>uses<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PaymentController@orders<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">    ]);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">Route</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>checkout<span class="pl-pds">'</span></span>,  [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>as<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>checkout<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>uses<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PaymentController@checkout<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">    ]);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-smi">$successUrl</span> <span class="pl-k">=</span> config(<span class="pl-s"><span class="pl-pds">'</span>lara-pay-ng.gateways.routes.success_route<span class="pl-pds">'</span></span>);</span>
+<span class="pl-s1">    <span class="pl-smi">$successName</span> <span class="pl-k">=</span> config(<span class="pl-s"><span class="pl-pds">'</span>lara-pay-ng.gateways.routes.success_route_name<span class="pl-pds">'</span></span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-smi">$failureUrl</span> <span class="pl-k">=</span> config(<span class="pl-s"><span class="pl-pds">'</span>lara-pay-ng.gateways.routes.failure_route<span class="pl-pds">'</span></span>);</span>
+<span class="pl-s1">    <span class="pl-smi">$failureName</span> <span class="pl-k">=</span> config(<span class="pl-s"><span class="pl-pds">'</span>lara-pay-ng.gateways.routes.failure_route_name<span class="pl-pds">'</span></span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">Route</span><span class="pl-k">::</span>post(<span class="pl-s"><span class="pl-pds">'</span>/<span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-smi">$successUrl</span> <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>/{mert_id}<span class="pl-pds">'</span></span>, [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>as<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$successName</span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>uses<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PaymentController@success<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">    ]);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">Route</span><span class="pl-k">::</span>post(<span class="pl-s"><span class="pl-pds">'</span>/<span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-smi">$failureUrl</span> <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>/{mert_id}<span class="pl-pds">'</span></span>, [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>as<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$failureName</span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>uses<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PaymentController@failed<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">    ]);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">Route</span><span class="pl-k">::</span>post(<span class="pl-s"><span class="pl-pds">'</span>/payment-notification/{mert_id}<span class="pl-pds">'</span></span>, [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>as<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>payment-notification<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>uses<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PaymentController@notification<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">    ]);</span></pre></div>
 
 <h1>
 <a id="remember-to-disallow-csrf-token-verification-for-your-payment-routes" class="anchor" href="#remember-to-disallow-csrf-token-verification-for-your-payment-routes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Remember to Disallow CSRF Token Verification for your payment routes</h1>
@@ -164,37 +129,33 @@
 
 <p>Use the appropriate route endpoints if you did change the default names and urls</p>
 
-<pre><code>
-    &lt;?php
-
-    namespace App\Http\Middleware;
-
-    use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as BaseVerifier;
-
-    class VerifyCsrfToken extends BaseVerifier
-    {
-        /**
-         * The URIs that should be excluded from CSRF verification.
-         *
-         * @var array
-         */
-        protected $except = [
-            //
-
-            'transaction-failed/*',
-            'transaction-successful/*',
-            'payment-notification/*',
-
-        ];
-    }
-</code></pre>
+<div class="highlight highlight-php"><pre><span class="pl-s1">    <span class="pl-k">&lt;</span>?<span class="pl-c1">php</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">namespace</span> <span class="pl-en">App\Http\Middleware</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">use</span> <span class="pl-c1">Illuminate\Foundation\Http\Middleware\VerifyCsrfToken</span> <span class="pl-k">as</span> <span class="pl-c1">BaseVerifier</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">class</span> <span class="pl-en">VerifyCsrfToken</span> <span class="pl-k">extends</span> <span class="pl-e">BaseVerifier</span></span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">         * The URIs that should be excluded from CSRF verification.</span></span>
+<span class="pl-s1"><span class="pl-c">         *</span></span>
+<span class="pl-s1"><span class="pl-c">         * <span class="pl-k">@var</span> array</span></span>
+<span class="pl-s1"><span class="pl-c">         */</span></span>
+<span class="pl-s1">        <span class="pl-k">protected</span> <span class="pl-smi">$except</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">            <span class="pl-c">//</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>transaction-failed/*<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>transaction-successful/*<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>payment-notification/*<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        ];</span>
+<span class="pl-s1">    }</span></pre></div>
 
 <p>Next Migrate the Package Tables.</p>
 
-<pre><code>
-    php artisan migrate
-
-</code></pre>
+<div class="highlight highlight-shell"><pre>    php artisan migrate
+</pre></div>
 
 <p>Next, Test the default Controller by visiting /Orders and follow through.</p>
 
@@ -202,33 +163,31 @@
 all you need do is to Inject the PaymentGatewayManager Class into that controller, and you
 Instantly gain access to all the methods provided by the facades below.</p>
 
-<pre><code>
-    use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-    use LaraPayNG\Managers\PaymentGatewayManager;
-
-    class PaymentController extends Controller
-    {
-        /**
-         * @var PaymentGateway
-         */
-        private $paymentGateway;
-
-
-        /**
-         * @param PaymentGatewayManager $paymentGateway
-         */
-        public function __construct(PaymentGatewayManager $paymentGateway)
-        {
-            $this-&gt;paymentGateway = $paymentGateway;
-        }
-
-        ....
-
-    }
-
-
-
-</code></pre>
+<div class="highlight highlight-php"><pre><span class="pl-s1">    <span class="pl-k">use</span> <span class="pl-c1">LaraPayNG\Exceptions\UnknownPaymentGatewayException</span>;</span>
+<span class="pl-s1">    <span class="pl-k">use</span> <span class="pl-c1">LaraPayNG\Managers\PaymentGatewayManager</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">class</span> <span class="pl-en">PaymentController</span> <span class="pl-k">extends</span> <span class="pl-e">Controller</span></span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">         * <span class="pl-k">@var</span> PaymentGateway</span></span>
+<span class="pl-s1"><span class="pl-c">         */</span></span>
+<span class="pl-s1">        <span class="pl-k">private</span> <span class="pl-smi">$paymentGateway</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-c">/**</span></span>
+<span class="pl-s1"><span class="pl-c">         * <span class="pl-k">@param</span> PaymentGatewayManager $paymentGateway</span></span>
+<span class="pl-s1"><span class="pl-c">         */</span></span>
+<span class="pl-s1">        <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-c1">__construct</span>(<span class="pl-c1">PaymentGatewayManager</span> <span class="pl-smi">$paymentGateway</span>)</span>
+<span class="pl-s1">        {</span>
+<span class="pl-s1">            <span class="pl-smi">$this</span><span class="pl-k">-&gt;</span><span class="pl-smi">paymentGateway</span> <span class="pl-k">=</span> <span class="pl-smi">$paymentGateway</span>;</span>
+<span class="pl-s1">        }</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-k">....</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    }</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span></pre></div>
 
 <h1>
 <a id="facades" class="anchor" href="#facades" aria-hidden="true"><span class="octicon octicon-link"></span></a>Facades</h1>
@@ -342,13 +301,16 @@ as well as a --days option specifying how many days back data is considered old.
 <li>Ability to Handle Transaction From Start to Finish</li>
 <li>Back everything up with Tests.</li>
 </ul>
-      </section>
-      <footer>
-        <p>Project maintained by <a href="https://github.com/dammyammy">dammyammy</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/dammyammy/lara-pay-ng">LaraPay NG</a> is maintained by <a href="https://github.com/dammyammy">dammyammy</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+
+    </section>
+
+  
   </body>
 </html>
+
