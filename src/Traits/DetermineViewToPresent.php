@@ -1,15 +1,14 @@
 <?php
 
-
 namespace LaraPayNG\Traits;
-
 
 use LaraPayNG\Events\TransactionSuccessful;
 use LaraPayNG\Events\TransactionUnsuccessful;
+
 //
 
-trait DetermineViewToPresent {
-
+trait DetermineViewToPresent
+{
     /**
      * @param $result
      *
@@ -17,17 +16,16 @@ trait DetermineViewToPresent {
      */
     private function determineViewToPresent($result)
     {
-        if($this->determineTransactionStatus($result) == 'successful') {
+        if ($this->determineTransactionStatus($result) == 'successful') {
             return view(config('lara-pay-ng.gateways.routes.success_view_name'), compact('result'));
         }
 
         return view(config('lara-pay-ng.gateways.routes.failure_view_name'), compact('result'));
     }
 
-
     private function dispatchAppropriateEvents($result)
     {
-        switch($this->determineTransactionStatus($result)) {
+        switch ($this->determineTransactionStatus($result)) {
             case 'successful':
                 event(new TransactionSuccessful($result));
                 break;

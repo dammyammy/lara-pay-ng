@@ -1,13 +1,11 @@
 <?php
 
-
 namespace LaraPayNG\Events;
 
 use Illuminate\Queue\SerializesModels;
 
-
-class TransactionSuccessful {
-
+class TransactionSuccessful
+{
     use SerializesModels;
     /**
      * @var
@@ -31,6 +29,6 @@ class TransactionSuccessful {
      */
     public function broadcastOn()
     {
-        return [ ];
+        return [];
     }
 }

@@ -5,7 +5,7 @@ namespace LaraPayNG\Contracts;
 interface PaymentGateway
 {
     /**
-     * Log Transaction Before Paying So as To Persist Data
+     * Log Transaction Before Paying So as To Persist Data.
      *
      * @param $transactionData
      *
@@ -13,10 +13,9 @@ interface PaymentGateway
      */
     public function logTransaction($transactionData);
 
-
     /**
      * @param string $productId
-     * @param array $transactionData
+     * @param array  $transactionData
      * @param string $class
      * @param $buttonTitle
      * @param string $gateway
@@ -28,7 +27,6 @@ interface PaymentGateway
     public function payButton($productId, $transactionData, $class, $buttonTitle, $gateway);
 
     /**
-     *
      * @param $transactionData
      * @param $mertId
      *
@@ -36,16 +34,14 @@ interface PaymentGateway
      */
     public function receiveTransactionResponse($transactionData, $mertId);
 
-
     /**
-     * Log Transaction Response
+     * Log Transaction Response.
      *
      * @param $transactionData
      *
      * @return
      */
     public function logResponse($transactionData);
-
 
     /**
      * @param $key
@@ -56,33 +52,26 @@ interface PaymentGateway
      */
     public function config($key);
 
-
     /**
-     *
-     * Get All Transactions
+     * Get All Transactions.
      *
      * @return mixed
      */
     public function viewAllTransactions();
 
     /**
-     *
-     * Get All Failed Transactions
+     * Get All Failed Transactions.
      *
      * @return mixed
      */
     public function viewFailedTransactions();
 
     /**
-     *
-     * Get All Successful Transactions
+     * Get All Successful Transactions.
      *
      * @return mixed
      */
     public function viewSuccessfulTransactions();
-
-
-
 
 //    /**
 //     * Generate invoice return for Transaction

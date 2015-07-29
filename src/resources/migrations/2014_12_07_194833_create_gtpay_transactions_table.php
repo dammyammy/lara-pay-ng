@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 
-class CreateGtpayTransactionsTable extends Migration {
-
+class CreateGtpayTransactionsTable extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -46,5 +46,4 @@ class CreateGtpayTransactionsTable extends Migration {
     {
         Schema::drop('gtpay_transactions');
     }
-
 }

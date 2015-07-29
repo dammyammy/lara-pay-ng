@@ -1,20 +1,18 @@
 <?php
 
-
 namespace LaraPayNG;
 
 use Carbon\Carbon;
-use DB;
 use GuzzleHttp\Client;
 use LaraPayNG\Contracts\PaymentGateway;
 use LaraPayNG\Traits\CanGenerateInvoice;
 
 class SimplePay extends Helpers implements PaymentGateway
 {
-//    use CanGenerateInvoice;
+    //    use CanGenerateInvoice;
 
     /**
-     * Define Gateway name
+     * Define Gateway name.
      */
     const GATEWAY = 'simplepay';
 
@@ -30,10 +28,9 @@ class SimplePay extends Helpers implements PaymentGateway
         return $this->getConfig(self::GATEWAY, $key);
     }
 
-
     /**
      * @param string $transactionId
-     * @param array $transactionData
+     * @param array  $transactionData
      * @param string $class
      * @param string $buttonTitle
      * @param string $gateway
@@ -41,6 +38,7 @@ class SimplePay extends Helpers implements PaymentGateway
      * Render Pay Button For Particular Product
      *
      * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     *
      * @return string
      */
     public function payButton($transactionId, $transactionData = [], $class = '', $buttonTitle = 'Pay Now', $gateway = self::GATEWAY)
@@ -54,7 +52,7 @@ class SimplePay extends Helpers implements PaymentGateway
     }
 
     /**
-     * Log Transaction Before Paying So as To Persist Data
+     * Log Transaction Before Paying So as To Persist Data.
      *
      * @param $transactionData
      *
@@ -62,7 +60,6 @@ class SimplePay extends Helpers implements PaymentGateway
      */
     public function logTransaction($transactionData)
     {
-
         $items = $this->serializeItemsToJson($transactionData);
 
         $total = $this->sumItemPrices($transactionData);
@@ -70,24 +67,24 @@ class SimplePay extends Helpers implements PaymentGateway
         $payerId = isset($transactionData['payer_id']) ? $transactionData['payer_id'] : auth()->user()->getAuthIdentifier();
 
         $valueToInsert = [
-            'escrow'        => isset($transactionData['escrow']) ? $transactionData['escrow']: false,
-            'freeclient'    => isset($transactionData['freeclient']) ? $transactionData['freeclient']: true,
-            'nocards'       => isset($transactionData['nocards']) ? $transactionData['nocards']: false,
-            'giftcards'     => isset($transactionData['giftcards']) ? $transactionData['giftcards']: false,
-            'chargeforcards'=> isset($transactionData['chargeforcards']) ? $transactionData['chargeforcards']: true,
-            'price'         => isset($transactionData['price']) ? $transactionData['price']: $total,
-            'setup'         => isset($transactionData['setup']) ? $transactionData['setup']: 0.00,
-            'tax'           => isset($transactionData['tax']) ? $transactionData['tax']: 0.00,
-            'shipping'      => isset($transactionData['shipping']) ? $transactionData['shipping']: 0.00,
-            'commission_amount' => isset($transactionData['commission_amount']) ? $transactionData['commission_amount']: 0.00,
-            'items'         => $items,
-            'comments'      => isset($transactionData['comments']) ? $transactionData['comments'] : null,
-            'action'        => isset($transactionData['action']) ? $transactionData['action'] : 'product',
-            'trialperiod'   => isset($transactionData['trialperiod']) ? $transactionData['trialperiod'] : null,
-            'period'        => isset($transactionData['period']) ? $transactionData['period'] : null,
-            'payer_id'      => is_null($payerId) ? $payerId : null,
-            'created_at'    => Carbon::now(),
-            'updated_at'    => Carbon::now(),
+            'escrow'            => isset($transactionData['escrow']) ? $transactionData['escrow'] : false,
+            'freeclient'        => isset($transactionData['freeclient']) ? $transactionData['freeclient'] : true,
+            'nocards'           => isset($transactionData['nocards']) ? $transactionData['nocards'] : false,
+            'giftcards'         => isset($transactionData['giftcards']) ? $transactionData['giftcards'] : false,
+            'chargeforcards'    => isset($transactionData['chargeforcards']) ? $transactionData['chargeforcards'] : true,
+            'price'             => isset($transactionData['price']) ? $transactionData['price'] : $total,
+            'setup'             => isset($transactionData['setup']) ? $transactionData['setup'] : 0.00,
+            'tax'               => isset($transactionData['tax']) ? $transactionData['tax'] : 0.00,
+            'shipping'          => isset($transactionData['shipping']) ? $transactionData['shipping'] : 0.00,
+            'commission_amount' => isset($transactionData['commission_amount']) ? $transactionData['commission_amount'] : 0.00,
+            'items'             => $items,
+            'comments'          => isset($transactionData['comments']) ? $transactionData['comments'] : null,
+            'action'            => isset($transactionData['action']) ? $transactionData['action'] : 'product',
+            'trialperiod'       => isset($transactionData['trialperiod']) ? $transactionData['trialperiod'] : null,
+            'period'            => isset($transactionData['period']) ? $transactionData['period'] : null,
+            'payer_id'          => is_null($payerId) ? $payerId : null,
+            'created_at'        => Carbon::now(),
+            'updated_at'        => Carbon::now(),
         ];
 
         $table = $this->config('table');
@@ -102,7 +99,6 @@ class SimplePay extends Helpers implements PaymentGateway
     }
 
     /**
-     *
      * @param $transactionData
      * @param $mertId
      *
@@ -111,28 +107,28 @@ class SimplePay extends Helpers implements PaymentGateway
     public function receiveTransactionResponse($transactionData, $mertId)
     {
         $queryString = [
-            "transaction_id"  => $transactionData["transaction_id"],
-            "customid"        => $transactionData["customid"],
-            "buyer"           => $transactionData["buyer"],
-            "total"           => floatval($transactionData["total"]),
-            "comments"          => $transactionData["comments"],
-            "SP_TRANSACTION_ERROR"=> $transactionData["SP_TRANSACTION_ERROR"],
-            "SP_TRANSACTION_ERROR_CODE"       => $transactionData["SP_TRANSACTION_ERROR_CODE"],
-            "action"            => $transactionData["action"],
-            "referer"          => $transactionData["referer"],
-            "pname"           => $transactionData["pname"],
-            "pid"             => $transactionData["pid"],
-            "quantity"        => $transactionData["quantity"],
-            "fees"            => floatval($transactionData["fees"]),
-            "commission_amount" => floatval($transactionData["comission_amount"]),
-            'cmd' => '_notify-validate'
+            'transaction_id'                  => $transactionData['transaction_id'],
+            'customid'                        => $transactionData['customid'],
+            'buyer'                           => $transactionData['buyer'],
+            'total'                           => floatval($transactionData['total']),
+            'comments'                        => $transactionData['comments'],
+            'SP_TRANSACTION_ERROR'            => $transactionData['SP_TRANSACTION_ERROR'],
+            'SP_TRANSACTION_ERROR_CODE'       => $transactionData['SP_TRANSACTION_ERROR_CODE'],
+            'action'                          => $transactionData['action'],
+            'referer'                         => $transactionData['referer'],
+            'pname'                           => $transactionData['pname'],
+            'pid'                             => $transactionData['pid'],
+            'quantity'                        => $transactionData['quantity'],
+            'fees'                            => floatval($transactionData['fees']),
+            'commission_amount'               => floatval($transactionData['comission_amount']),
+            'cmd'                             => '_notify-validate',
         ];
 
         $client = new Client();
 
-        $request = $client->get($this->config('gatewayUrl') . 'processverify.php', [
+        $request = $client->get($this->config('gatewayUrl').'processverify.php', [
             'query'     => $queryString,
-            'headers'   =>  ['Accept' => 'application/json' ]
+            'headers'   => ['Accept' => 'application/json'],
         ]);
 
         $response = $request->getBody();
@@ -144,22 +140,19 @@ class SimplePay extends Helpers implements PaymentGateway
         $result = $this->logResponse($transaction);
 
         return $this->collateResponse($result);
-
-
     }
-
 
     public function getTransactionDetails($transactionId)
     {
         $client = new Client();
 
         $queryString = [
-            'user' => $this->config('member'),
-            'tranid' => $transactionId
+            'user'   => $this->config('member'),
+            'tranid' => $transactionId,
         ];
-        $request = $client->get($this->config('gatewayUrl') . 'transactiondetails.php', [
+        $request = $client->get($this->config('gatewayUrl').'transactiondetails.php', [
             'query'     => $queryString,
-            'headers'   =>  ['Accept' => 'application/json' ]
+            'headers'   => ['Accept' => 'application/json'],
         ]);
 
         $response = $request->getBody();
@@ -167,10 +160,8 @@ class SimplePay extends Helpers implements PaymentGateway
         return json_decode($response, true);
     }
 
-
-
     /**
-     * Log Transaction Response
+     * Log Transaction Response.
      *
      * @param $transactionData
      *
@@ -179,31 +170,28 @@ class SimplePay extends Helpers implements PaymentGateway
     public function logResponse($transactionData)
     {
         $valueToUpdate = [
-            "s_transaction_id"  => $transactionData["transaction_id"],
-            "s_customid"        => $transactionData["customid"],
-            "s_buyer"           => $transactionData["buyer"],
-            "s_total"           => floatval($transactionData["total"]),
-            "comments"          => $transactionData["comments"],
-            "status"            => $transactionData["SP_TRANSACTION_ERROR"],
-            "status_code"       => $transactionData["SP_TRANSACTION_ERROR_CODE"],
-            "action"            => $transactionData["action"],
-            "referrer"          => $transactionData["referer"],
-            "s_pname"           => $transactionData["pname"],
-            "s_pid"             => $transactionData["pid"],
-            "s_quantity"        => $transactionData["quantity"],
-            "s_fees"            => floatval($transactionData["fees"]),
-            "commission_amount" => floatval($transactionData["comission_amount"]),
+            's_transaction_id'  => $transactionData['transaction_id'],
+            's_customid'        => $transactionData['customid'],
+            's_buyer'           => $transactionData['buyer'],
+            's_total'           => floatval($transactionData['total']),
+            'comments'          => $transactionData['comments'],
+            'status'            => $transactionData['SP_TRANSACTION_ERROR'],
+            'status_code'       => $transactionData['SP_TRANSACTION_ERROR_CODE'],
+            'action'            => $transactionData['action'],
+            'referrer'          => $transactionData['referer'],
+            's_pname'           => $transactionData['pname'],
+            's_pid'             => $transactionData['pid'],
+            's_quantity'        => $transactionData['quantity'],
+            's_fees'            => floatval($transactionData['fees']),
+            'commission_amount' => floatval($transactionData['comission_amount']),
         ];
 
         $table = $this->config('table');
 
-        $this->dataRepository->updateTransactionDataWhere('customid', $transactionData["customid"], $table, $valueToUpdate);
+        $this->dataRepository->updateTransactionDataWhere('customid', $transactionData['customid'], $table, $valueToUpdate);
 
         return $this->dataRepository->getTransactionDataWhere('customid', $transactionData['s_customid'], $table);
     }
-
-
-
 
     /**
      * @param $transactionData
@@ -212,7 +200,7 @@ class SimplePay extends Helpers implements PaymentGateway
      */
     public function serializeItemsToJson($transactionData)
     {
-        $items = [ ];
+        $items = [];
 
         foreach ($transactionData as $key => $value) {
             if (strpos($key, 'item_') === 0) {
@@ -228,16 +216,15 @@ class SimplePay extends Helpers implements PaymentGateway
             }
         }
 
-
         if (empty($items)) {
             $items = json_encode([
                 1 => [
-                    'item' => $transactionData['product'],
-                    'price' => $transactionData['price'],
+                    'item'        => $transactionData['product'],
+                    'price'       => $transactionData['price'],
                     'description' => isset($transactionData['comments'])
                         ? $transactionData['comments']
-                        : 'Billed Every ' . $transactionData['period'] . ' days'
-                ]
+                        : 'Billed Every '.$transactionData['period'].' days',
+                ],
             ]);
 
             return $items;
@@ -248,10 +235,8 @@ class SimplePay extends Helpers implements PaymentGateway
         return $items;
     }
 
-
     /**
-     *
-     * Get All Transactions
+     * Get All Transactions.
      *
      * @return mixed
      */
@@ -261,8 +246,7 @@ class SimplePay extends Helpers implements PaymentGateway
     }
 
     /**
-     *
-     * Get All Failed Transactions
+     * Get All Failed Transactions.
      *
      * @return mixed
      */
@@ -272,8 +256,7 @@ class SimplePay extends Helpers implements PaymentGateway
     }
 
     /**
-     *
-     * Get All Successful Transactions
+     * Get All Successful Transactions.
      *
      * @return mixed
      */

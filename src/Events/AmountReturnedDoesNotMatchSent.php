@@ -1,13 +1,11 @@
 <?php
 
-
 namespace LaraPayNG\Events;
 
 use Illuminate\Queue\SerializesModels;
 
 class AmountReturnedDoesNotMatchSent
 {
-
     use SerializesModels;
     /**
      * @var
@@ -31,6 +29,6 @@ class AmountReturnedDoesNotMatchSent
      */
     public function broadcastOn()
     {
-        return [ ];
+        return [];
     }
 }

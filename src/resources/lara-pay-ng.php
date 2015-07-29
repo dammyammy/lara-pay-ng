@@ -39,8 +39,7 @@ return [
         | A Unique Transaction Reference Needs to be Generated for each (cashenvoy) Transaction.
         */
 
-        'transactionIdPrefix' => 'REF' . time() . 'TRAN',
-
+        'transactionIdPrefix' => 'REF'.time().'TRAN',
 
         /*
         |--------------------------------------------------------------------------
@@ -58,9 +57,7 @@ return [
             'failure_route_name'       => 'transaction-failed', // Route::get('failed', ['as' => 'failed']);
             'failure_view_name'        => 'vendor.lara-pay-ng.failed', // View::make('frontend.success');
 
-
         ],
-
 
         /*
         |--------------------------------------------------------------------------
@@ -76,17 +73,14 @@ return [
             'gtpay_tranx_curr'       => env('CURRENCY', '₦'),
             'gtpay_no_show_gtbank'   => 'yes',
             'gtpay_gway_first'       => 'no', // yes or no
-            'gtpay_gway_name'       =>  null, // webpay, ibank or migs or null if no is specified gway_first
+            'gtpay_gway_name'        => null, // webpay, ibank or migs or null if no is specified gway_first
             'hashkey'                => env('GTPAY_HASH_KEY', 'Your Insanely Long HashKey from GTB'),
             'gtpay_tranx_noti_url'   => env('GTPAY_REDIRECT_URL', 'payment-notification'),
             'gatewayUrl'             => 'https://ibank.gtbank.com/GTPay/Tranx.aspx',
 
-            'table'                 => 'gtpay_transactions'
+            'table'                 => 'gtpay_transactions',
 
         ],
-
-
-
 
         /*
         |--------------------------------------------------------------------------
@@ -106,7 +100,6 @@ return [
             'table'                 => 'webpay_transactions',
         ],
 
-
         /*
         |--------------------------------------------------------------------------
         | VoguePay by VoguePay Nigeria Settings
@@ -122,7 +115,6 @@ return [
             'notify_url'        => env('VOGUEPAY_REDIRECT_URL', 'payment-notification'),
             'fail_url'          => env('VOGUEPAY_REDIRECT_URL', 'transaction-failed'),
             'success_url'       => env('VOGUEPAY_REDIRECT_URL', 'transaction-successful'),
-
 
             'gatewayUrl'        => 'https://voguepay.com/pay/',
 
@@ -171,6 +163,6 @@ return [
             'table'             => 'cashenvoy_transactions',
         ],
 
-    ]
+    ],
 
 ];

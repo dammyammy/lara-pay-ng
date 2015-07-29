@@ -4,9 +4,8 @@ namespace LaraPayNG\Events;
 
 use Illuminate\Queue\SerializesModels;
 
-
-class TransactionUnsuccessful {
-
+class TransactionUnsuccessful
+{
     use SerializesModels;
     /**
      * @var

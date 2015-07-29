@@ -1,14 +1,16 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 //use Illuminate\Routing\Controller;
 use Illuminate\Session\Store;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
 use LaraPayNG\Exceptions\UnspecifiedTransactionAmountException;
-use LaraPayNG\Facades\GTPay;
-use LaraPayNG\Facades\VoguePay;
 use LaraPayNG\Facades\CashEnvoy;
+use LaraPayNG\Facades\GTPay;
 use LaraPayNG\Facades\SimplePay;
+use LaraPayNG\Facades\VoguePay;
 use LaraPayNG\Facades\WebPay;
 use LaraPayNG\Managers\PaymentGatewayManager;
 use LaraPayNG\Traits\DetermineViewToPresent;
@@ -16,7 +18,6 @@ use LaraPayNG\Traits\LaraPayNGTestData;
 
 class PaymentController extends Controller
 {
-
     use LaraPayNGTestData; // These Contains All Test Data Used For the Tests, Remove after implementing your own
     use DetermineViewToPresent; // These Determines If a Failure Or Success View is to be Shown. Leave It
 
@@ -32,7 +33,7 @@ class PaymentController extends Controller
 
     /**
      * @param PaymentGatewayManager $paymentGateway
-     * @param Store $session
+     * @param Store                 $session
      */
     public function __construct(PaymentGatewayManager $paymentGateway, Store $session)
     {
@@ -44,7 +45,6 @@ class PaymentController extends Controller
      * @return \Illuminate\View\View
      *
      * Page before proceeding to checkout
-     *
      */
     public function orders()
     {
@@ -81,23 +81,20 @@ class PaymentController extends Controller
             $items = json_decode($this->paymentGateway->serializeItemsToJson($transactionData), true);
 
             return view('vendor.lara-pay-ng.confirm', compact('transactionData', 'merchantRef', 'items'));
-
-        } catch (UnspecifiedTransactionAmountException $e){
+        } catch (UnspecifiedTransactionAmountException $e) {
             dd($e);
             // Handle This Exception However you please
             // Shouldn't Ever Occur If you Do the Implementation Correctly
-        } catch (UnknownPaymentGatewayException $e){
-
+        } catch (UnknownPaymentGatewayException $e) {
             dd($e);
             // Handle This Exception However you please
             // Shouldn't Ever Occur If you Choose One of the Supported Gateways and Spell It right
         }
     }
 
-
     public function notification($mert_id, Request $request)
     {
-//        dd($request->header('origin'));
+        //        dd($request->header('origin'));
 
         // For Situations Where a Not you prefer a Notification Url Other than Your Success or Fail Url Directly
         $result = $this->handleTransactionResponse($mert_id, $request);
@@ -146,6 +143,7 @@ class PaymentController extends Controller
      * @param Request $request
      *
      * Handle Gateway Response
+     *
      * @return mixed
      */
     private function handleTransactionResponse($mert_id, Request $request)
@@ -154,7 +152,7 @@ class PaymentController extends Controller
 
         $origin = $request->header('origin');
 
-        switch($origin) {
+        switch ($origin) {
             case str_contains($origin, 'gtbank'):
                 $result = GTPay::receiveTransactionResponse($data, $mert_id);
                 break;
@@ -180,7 +178,6 @@ class PaymentController extends Controller
 
                 break;
         }
-
 
         /*********************************
          * $result contains all information regarding the transaction, This would be a perfect

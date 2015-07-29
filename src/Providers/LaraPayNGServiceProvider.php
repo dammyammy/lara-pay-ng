@@ -1,4 +1,6 @@
-<?php namespace LaraPayNG\Providers;
+<?php
+
+namespace LaraPayNG\Providers;
 
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
@@ -28,42 +30,39 @@ class LaraPayNGServiceProvider extends ServiceProvider
         $this->registerCommands();
 
         $this->registerRepository();
-
     }
 
     /**
      * Bootstrap the application services.
      *
      * Publishes package config file to applications config folder :) Thanks busayo
-     *
      */
     public function boot()
     {
 
         // routes
-        if (! $this->app->routesAreCached()) {
-            require __DIR__ . '/../resources/routes.php';
+        if (!$this->app->routesAreCached()) {
+            require __DIR__.'/../resources/routes.php';
         }
 
         // views
         $this->publishes([
-            __DIR__. '/../resources/views/' => base_path('/resources/views/vendor/')
+            __DIR__.'/../resources/views/' => base_path('/resources/views/vendor/'),
         ], 'views');
-
 
         // config
         $this->publishes([
-            __DIR__. '/../resources/lara-pay-ng.php' => config_path('lara-pay-ng.php')
+            __DIR__.'/../resources/lara-pay-ng.php' => config_path('lara-pay-ng.php'),
         ], 'config');
 
         //migrations
         $this->publishes([
-            __DIR__.'/../resources/migrations/' => database_path('/migrations')
+            __DIR__.'/../resources/migrations/' => database_path('/migrations'),
         ], 'migrations');
 
         // controllers
         $this->publishes([
-            __DIR__. '/../resources/controllers/' => base_path('app/Http/Controllers/')
+            __DIR__.'/../resources/controllers/' => base_path('app/Http/Controllers/'),
         ], 'controllers');
 
         // Make commands Available
@@ -101,7 +100,7 @@ class LaraPayNGServiceProvider extends ServiceProvider
     {
         return [
             'gtpay', 'voguepay', 'webpay', 'cashenvoy', 'simplepay',
-            'pay', 'lara-pay-ng', 'command.lara-pay-ng.purge-database'
+            'pay', 'lara-pay-ng', 'command.lara-pay-ng.purge-database',
         ];
     }
 
@@ -145,5 +144,4 @@ class LaraPayNGServiceProvider extends ServiceProvider
             return new CashEnvoy($this->app->make(DataRepository::class), $this->app['config'], $app);
         });
     }
-
 }

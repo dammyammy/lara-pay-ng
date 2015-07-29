@@ -1,11 +1,11 @@
 <?php
 
-
 namespace LaraPayNG\Traits;
+
 use Illuminate\Http\Request;
 
-trait LaraPayNGTestData {
-
+trait LaraPayNGTestData
+{
     /**
      * @param Request $request
      *
@@ -70,7 +70,7 @@ trait LaraPayNGTestData {
                 'gtpay_cust_id'     => 'francis@grant.com', // auth()->user()->email
                 'gtpay_cust_name'   => 'francis grant', // auth()->user()->name
 //                'gtpay_tranx_amt'   => 2130.00, // Optional, the System will add up prices if value is not present
-                'gtpay_tranx_memo'  => 'Paying for 3 Lovely Aso Oke\'s: Black Aso Oke, Red Aso Oke, Silver Aso Oke'
+                'gtpay_tranx_memo'  => 'Paying for 3 Lovely Aso Oke\'s: Black Aso Oke, Red Aso Oke, Silver Aso Oke',
 
             ];
 
@@ -79,7 +79,6 @@ trait LaraPayNGTestData {
 
         dd('GTPay Does not support Recurrent Billing');
     }
-
 
     /**
      * @param Request $request
@@ -105,7 +104,7 @@ trait LaraPayNGTestData {
                 'webpay_cust_id'     => 'francis@grant.com', // auth()->user()->email
                 'webpay_cust_name'   => 'francis grant', // auth()->user()->name
 //                'webpay_tranx_amt'   => 2130.00, // Optional, the System will add up prices if value is not present
-                'webpay_tranx_memo'  => 'Paying for 3 Lovely Aso Oke\'s: Black Aso Oke, Red Aso Oke, Silver Aso Oke'
+                'webpay_tranx_memo'  => 'Paying for 3 Lovely Aso Oke\'s: Black Aso Oke, Red Aso Oke, Silver Aso Oke',
 
             ];
 
@@ -115,7 +114,6 @@ trait LaraPayNGTestData {
         dd('WebPay Does not support Recurrent Billing');
     }
 
-
     /**
      * @param Request $request
      *
@@ -124,7 +122,6 @@ trait LaraPayNGTestData {
     private function simplePayTestData($request)
     {
         $type = $request->get('type');
-
 
         if ($type == 'products') {
             $transactionData = [
@@ -138,21 +135,20 @@ trait LaraPayNGTestData {
                 'price_3'           => 900.00,
                 'description_3'     => 'That Aso Oke I Want',
 
-                'action' => 'payment',
-                'comments' => 'payment for ASo Oke',
-                'quantity' => 3,
-                'escrow' => false,
-                'freeclient' => false,
-                'nocards' => false,
-                'giftcards' => true,
+                'action'        => 'payment',
+                'comments'      => 'payment for ASo Oke',
+                'quantity'      => 3,
+                'escrow'        => false,
+                'freeclient'    => false,
+                'nocards'       => false,
+                'giftcards'     => true,
                 'chargeforcard' => true,
-                'setup' => 0,
-                'tax' => 0,
-                'shipping' => 0,
-
+                'setup'         => 0,
+                'tax'           => 0,
+                'shipping'      => 0,
 
                 'payer_id'     => 'dami@ogunmoye.com', // auth()->user()->email
-                'price'   => 2130.00 // In Kobo
+                'price'        => 2130.00, // In Kobo
 
             ];
 
@@ -162,22 +158,20 @@ trait LaraPayNGTestData {
         if ($type == 'subscription') {
             $transactionData = [
                 'period' => 30, // in days
-                'trial' => 7, // in days
+                'trial'  => 7, // in days
                 'action' => 'subscription',
 
                 'comments' => 'payment for ASo Oke',
-                'product' => 'payment for ASo Oke',
+                'product'  => 'payment for ASo Oke',
 
                 'payer_id'     => 'dami@ogunmoye.com', // auth()->user()->email
-                'price'   => 2130.00 // In Kobo
+                'price'        => 2130.00, // In Kobo
 
             ];
 
             return $transactionData;
         }
-
     }
-
 
     /**
      * @param Request $request
@@ -212,7 +206,6 @@ trait LaraPayNGTestData {
         dd('CashEnvoy Does not support Recurrent Billing');
     }
 
-
     /**
      * @param Request $request
      *
@@ -240,27 +233,25 @@ trait LaraPayNGTestData {
                 'ce_amount'         => 2130.00, // Optional, the System will add up prices if value is not present
 
                 // Simple Pay
-                'action' => 'payment',
-                'comments' => 'payment for ASo Oke',
-                'quantity' => 3,
-                'escrow' => false,
-                'freeclient' => false,
-                'nocards' => false,
-                'giftcards' => true,
+                'action'        => 'payment',
+                'comments'      => 'payment for ASo Oke',
+                'quantity'      => 3,
+                'escrow'        => false,
+                'freeclient'    => false,
+                'nocards'       => false,
+                'giftcards'     => true,
                 'chargeforcard' => true,
-                'setup' => 0,
-                'tax' => 0,
-                'shipping' => 0,
-                'payer_id'     => 'dami@ogunmoye.com', // auth()->user()->email
-                'price'   => 2130.00, // In Kobo
-
+                'setup'         => 0,
+                'tax'           => 0,
+                'shipping'      => 0,
+                'payer_id'      => 'dami@ogunmoye.com', // auth()->user()->email
+                'price'         => 2130.00, // In Kobo
 
                 // GTPay
                 'gtpay_cust_id'     => 'francis@grant.com', // auth()->user()->email
                 'gtpay_cust_name'   => 'francis grant', // auth()->user()->name
                 'gtpay_tranx_amt'   => 2130.00, // Optional, the System will add up prices if value is not present
                 'gtpay_tranx_memo'  => 'Paying for 3 Lovely Aso Oke\'s: Black Aso Oke, Red Aso Oke, Silver Aso Oke',
-
 
                 // VoguePay
                 'total'     => 2130.00,
@@ -273,14 +264,14 @@ trait LaraPayNGTestData {
             $transactionData = [
                 // Simple Pay
                 'period' => 30, // in days
-                'trial' => 7, // in days
+                'trial'  => 7, // in days
                 'action' => 'subscription',
 
                 'comments' => 'payment for ASo Oke',
-                'product' => 'payment for ASo Oke',
+                'product'  => 'payment for ASo Oke',
 
                 'payer_id'     => 'dami@ogunmoye.com', // auth()->user()->email
-                'price'   => 2130.00,
+                'price'        => 2130.00,
 
                 // Vogue Pay
                 'recurrent' => true,
@@ -295,7 +286,6 @@ trait LaraPayNGTestData {
 
         dd('Not All Gateways support Recurrent Billing');
     }
-
 
     /**
      * @param Request $request
@@ -331,7 +321,7 @@ trait LaraPayNGTestData {
                 dd('Check Config');
                 break;
         }
+
         return $transactionData;
     }
-
 }

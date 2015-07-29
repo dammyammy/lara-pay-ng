@@ -1,6 +1,5 @@
 <?php
 
-
 namespace LaraPayNG;
 
 use Carbon\Carbon;
@@ -10,17 +9,16 @@ use LaraPayNG\Traits\CanGenerateInvoice;
 
 class CashEnvoy extends Helpers implements PaymentGateway
 {
-//    use CanGenerateInvoice;
+    //    use CanGenerateInvoice;
 
     /**
-     * Define Gateway name
+     * Define Gateway name.
      */
     const GATEWAY = 'cashenvoy';
 
-
     /**
      * @param string $productId
-     * @param array $transactionData
+     * @param array  $transactionData
      * @param string $class
      * @param string $buttonTitle
      * @param string $gateway
@@ -28,6 +26,7 @@ class CashEnvoy extends Helpers implements PaymentGateway
      * Render Pay Button For Particular Product
      *
      * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     *
      * @return string
      */
     public function payButton($productId, $transactionData = [], $class = '', $buttonTitle = '', $gateway = self::GATEWAY)
@@ -41,7 +40,7 @@ class CashEnvoy extends Helpers implements PaymentGateway
     }
 
     /**
-     * Log Transaction Before Paying So as To Persist Data
+     * Log Transaction Before Paying So as To Persist Data.
      *
      * @param $transactionData
      *
@@ -55,12 +54,12 @@ class CashEnvoy extends Helpers implements PaymentGateway
 
         $valueToInsert = [
 
-            'ce_amount'     => isset($transactionData['ce_amount']) ? floatval($transactionData['ce_amount']) : $total,
-            'ce_customerid' => isset($transactionData['ce_customerid']) ? $transactionData['ce_customerid'] : auth()->user()->getAuthIdentifier(),
-            'ce_type'       => isset($transactionData['ce_type']) ? $transactionData['ce_type'] : 'Standard',
-            'ce_memo'       => isset($transactionData['ce_memo']) ? $transactionData['ce_memo'] : null,
-            'created_at'    => Carbon::now(),
-            'updated_at'    => Carbon::now(),
+            'ce_amount'         => isset($transactionData['ce_amount']) ? floatval($transactionData['ce_amount']) : $total,
+            'ce_customerid'     => isset($transactionData['ce_customerid']) ? $transactionData['ce_customerid'] : auth()->user()->getAuthIdentifier(),
+            'ce_type'           => isset($transactionData['ce_type']) ? $transactionData['ce_type'] : 'Standard',
+            'ce_memo'           => isset($transactionData['ce_memo']) ? $transactionData['ce_memo'] : null,
+            'created_at'        => Carbon::now(),
+            'updated_at'        => Carbon::now(),
             'items'             => $items,
         ];
 
@@ -78,7 +77,6 @@ class CashEnvoy extends Helpers implements PaymentGateway
     }
 
     /**
-     *
      * @param $transactionData
      * @param $mertId
      *
@@ -91,17 +89,17 @@ class CashEnvoy extends Helpers implements PaymentGateway
         $signature = trim($this->generateVerificationHash($transactionData['ce_transref'], $gateway = 'cashenvoy'));
 
         $queryString = [
-            'mertid'    => $mertId,
-            'respformat'    => 'json',
-            'transref'   => $transactionData['ce_transref'],
-            'signature'      => $signature
+            'mertid'         => $mertId,
+            'respformat'     => 'json',
+            'transref'       => $transactionData['ce_transref'],
+            'signature'      => $signature,
         ];
 
         $client = new Client();
 
-        $request = $client->post($this->config('gatewayUrl') . '?cmd=requery', [
-            'body'     => $queryString,
-            'headers'   =>  ['Accept' => 'application/json']
+        $request = $client->post($this->config('gatewayUrl').'?cmd=requery', [
+            'body'      => $queryString,
+            'headers'   => ['Accept' => 'application/json'],
         ]);
 
         $response = $request->getBody();
@@ -114,7 +112,7 @@ class CashEnvoy extends Helpers implements PaymentGateway
     }
 
     /**
-     * Log Transaction Response
+     * Log Transaction Response.
      *
      * @param $transactionData
      *
@@ -122,16 +120,16 @@ class CashEnvoy extends Helpers implements PaymentGateway
      */
     public function logResponse($transactionData)
     {
-        $statusCode = $transactionData["TransactionStatus"];
+        $statusCode = $transactionData['TransactionStatus'];
 
-        $amountCorrect = $transactionData["TransactionAmount"] == $transactionData["ce_amount"];
+        $amountCorrect = $transactionData['TransactionAmount'] == $transactionData['ce_amount'];
 
         $valueToUpdate = [
-            "transaction_id"        => isset($transactionData["TransactionId"]) ? $transactionData["TransactionId"] : null,
-            "amount"                => (($statusCode == 'C00')) ? floatval($transactionData["TransactionAmount"]) : 0.00,
-            "status"                => ($amountCorrect) ? $transactionData["ce_response"] : 'Amount does not Match! Contact CashEnvoy!',
-            "response_code"         => ($amountCorrect) ? $statusCode : 'C05',
-            "response_description"  =>  ($amountCorrect) ? $this->responseDesctiption($statusCode) : $this->responseDesctiption('C05'),
+            'transaction_id'        => isset($transactionData['TransactionId']) ? $transactionData['TransactionId'] : null,
+            'amount'                => (($statusCode == 'C00')) ? floatval($transactionData['TransactionAmount']) : 0.00,
+            'status'                => ($amountCorrect) ? $transactionData['ce_response'] : 'Amount does not Match! Contact CashEnvoy!',
+            'response_code'         => ($amountCorrect) ? $statusCode : 'C05',
+            'response_description'  => ($amountCorrect) ? $this->responseDesctiption($statusCode) : $this->responseDesctiption('C05'),
         ];
 
         $table = $this->config('table');
@@ -141,7 +139,6 @@ class CashEnvoy extends Helpers implements PaymentGateway
         return $this->dataRepository->getTransactionDataWhere('ce_transref', $transactionData['ce_transref'], $table);
     }
 
-
     /**
      * @param $transactionData
      *
@@ -149,7 +146,7 @@ class CashEnvoy extends Helpers implements PaymentGateway
      */
     public function serializeItemsToJson($transactionData)
     {
-        $items = [ ];
+        $items = [];
 
         foreach ($transactionData as $key => $value) {
             if (strpos($key, 'item_') === 0) {
@@ -165,16 +162,15 @@ class CashEnvoy extends Helpers implements PaymentGateway
             }
         }
 
-
         if (empty($items)) {
             $items = json_encode([
                 1 => [
-                    'item' => $transactionData['ce_memo'],
-                    'price' => $transactionData['ce_amount'],
+                    'item'        => $transactionData['ce_memo'],
+                    'price'       => $transactionData['ce_amount'],
                     'description' => isset($transactionData['ce_memo'])
                         ? $transactionData['ce_memo']
-                        : 'N/A'
-                ]
+                        : 'N/A',
+                ],
             ]);
 
             return $items;
@@ -193,16 +189,14 @@ class CashEnvoy extends Helpers implements PaymentGateway
             'C02' => 'User cancellation by inactivity.',
             'C03' => 'No transaction record.',
             'C04' => 'Insufficient funds.',
-            'C05' => 'Transaction failed. Contact support@cashenvoy.com for more information.'
+            'C05' => 'Transaction failed. Contact support@cashenvoy.com for more information.',
         ];
 
         return $codes[$status];
     }
 
-
     /**
-     *
-     * Get All Transactions
+     * Get All Transactions.
      *
      * @return mixed
      */
@@ -212,8 +206,7 @@ class CashEnvoy extends Helpers implements PaymentGateway
     }
 
     /**
-     *
-     * Get All Failed Transactions
+     * Get All Failed Transactions.
      *
      * @return mixed
      */
@@ -223,8 +216,7 @@ class CashEnvoy extends Helpers implements PaymentGateway
     }
 
     /**
-     *
-     * Get All Successful Transactions
+     * Get All Successful Transactions.
      *
      * @return mixed
      */
@@ -232,6 +224,4 @@ class CashEnvoy extends Helpers implements PaymentGateway
     {
         return $this->getSuccessfulTransactions(self::GATEWAY);
     }
-
-
 }

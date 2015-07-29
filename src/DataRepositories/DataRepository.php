@@ -1,10 +1,9 @@
 <?php
 
-
 namespace LaraPayNG\DataRepositories;
 
-
-interface DataRepository {
+interface DataRepository
+{
     public function getTransactionDataFrom($gatewayTable, $transactionId);
     public function saveTransactionDataTo($gatewayTable, $data);
     public function updateTransactionDataFrom($gatewayTable, $data, $id);
@@ -16,5 +15,4 @@ interface DataRepository {
     public function getAllSuccessfulTransactionsFrom($gatewayTable);
     public function getAllFailedTransactionsFrom($gatewayTable);
     public function getItemsPaidForInTransaction($transactionId, $gatewayTable, $returnType);
-
 }

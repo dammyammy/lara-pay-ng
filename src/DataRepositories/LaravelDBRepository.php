@@ -1,13 +1,12 @@
 <?php
 
-
 namespace LaraPayNG\DataRepositories;
 
 use Carbon\Carbon;
 use DB;
 
-class LaravelDBRepository implements DataRepository {
-
+class LaravelDBRepository implements DataRepository
+{
     public function getTransactionDataFrom($gatewayTable, $transactionId)
     {
         return DB::table($gatewayTable)->find($transactionId);
@@ -29,19 +28,19 @@ class LaravelDBRepository implements DataRepository {
                 break;
 
             case starts_with($gatewayTable, ['gtpay']):
-                $data =  DB::table($gatewayTable)->where('gtpay_response_description', 'Approved by Financial Institution')->get();
+                $data = DB::table($gatewayTable)->where('gtpay_response_description', 'Approved by Financial Institution')->get();
                 break;
 
             case starts_with($gatewayTable, ['cashenvoy']):
-                $data =  DB::table($gatewayTable)->where('response_description', 'CashEnvoy transaction successful.')->get();
+                $data = DB::table($gatewayTable)->where('response_description', 'CashEnvoy transaction successful.')->get();
                 break;
 
             case starts_with($gatewayTable, ['simplepay']):
-                $data =  DB::table($gatewayTable)->where('response_description', 'CashEnvoy transaction successful.')->get();
+                $data = DB::table($gatewayTable)->where('response_description', 'CashEnvoy transaction successful.')->get();
                 break;
 
             case starts_with($gatewayTable, ['webpay']):
-                $data =  DB::table($gatewayTable)->where('response_description', 'CashEnvoy transaction successful.')->get();
+                $data = DB::table($gatewayTable)->where('response_description', 'CashEnvoy transaction successful.')->get();
                 break;
         }
 
@@ -71,12 +70,12 @@ class LaravelDBRepository implements DataRepository {
 
             case starts_with($gatewayTable, ['simplepay']):
                 $data = DB::table($gatewayTable)->where('response_description', '!=', 'Pending')
-                    ->where('response_description', '!=',  'CashEnvoy transaction successful.')->get();
+                    ->where('response_description', '!=', 'CashEnvoy transaction successful.')->get();
                 break;
 
             case starts_with($gatewayTable, ['webpay']):
                 $data = DB::table($gatewayTable)->where('response_description', '!=', 'Pending')
-                    ->where('response_description', '!=','CashEnvoy transaction successful.')->get();
+                    ->where('response_description', '!=', 'CashEnvoy transaction successful.')->get();
                 break;
         }
 
@@ -90,8 +89,8 @@ class LaravelDBRepository implements DataRepository {
         try {
             $id = DB::table($gatewayTable)->insertGetId($data);
             DB::commit();
-            return $id;
 
+            return $id;
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
@@ -100,28 +99,25 @@ class LaravelDBRepository implements DataRepository {
 
     public function updateTransactionDataFrom($gatewayTable, $data, $id)
     {
-
         DB::beginTransaction();
 
         try {
             $id = DB::table($gatewayTable)->where('id', $id)->update($data);
             DB::commit();
-            return $id;
 
+            return $id;
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
         }
-
     }
 
     public function deleteStaleTransactionDataFrom($gatewayTable, $statusColumnName, $days = 3, $with_failed = 'false', $successfulTransactionName = null)
     {
-
         DB::beginTransaction();
 
         try {
-            if($with_failed != 'true') {
+            if ($with_failed != 'true') {
                 DB::table($gatewayTable)
                     ->where($statusColumnName, 'Pending')
                     ->where('updated_at', '<=', Carbon::now()->subDays($days))
@@ -130,18 +126,16 @@ class LaravelDBRepository implements DataRepository {
                 DB::commit();
 
                 return true;
-            }
-            else
-            {
+            } else {
                 DB::table($gatewayTable)
                     ->where($statusColumnName, $successfulTransactionName)
                     ->where('updated_at', '<=', Carbon::now()->subDays($days))
                     ->delete();
 
                 DB::commit();
+
                 return true;
             }
-
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
@@ -156,8 +150,8 @@ class LaravelDBRepository implements DataRepository {
             $id = DB::table($table)->where($name, $id)->update($valueToUpdate);
 
             DB::commit();
-            return $id;
 
+            return $id;
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
@@ -166,7 +160,6 @@ class LaravelDBRepository implements DataRepository {
 
     public function getTransactionDataWhere($name, $id, $table)
     {
-
         return DB::table($table)->where($name, $id)->first();
     }
 
@@ -199,12 +192,10 @@ class LaravelDBRepository implements DataRepository {
     {
         $items = DB::table($gatewayTable)->select(['items'])->find($transactionId);
 
-        if ($returnType == 'array')
-        {
-            return json_decode($items,true);
+        if ($returnType == 'array') {
+            return json_decode($items, true);
         }
 
         return $items;
-
     }
 }

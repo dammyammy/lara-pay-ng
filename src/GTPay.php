@@ -1,6 +1,5 @@
 <?php
 
-
 namespace LaraPayNG;
 
 use Carbon\Carbon;
@@ -10,13 +9,12 @@ use LaraPayNG\Traits\CanGenerateInvoice;
 
 class GTPay extends Helpers implements PaymentGateway
 {
-//    use CanGenerateInvoice;
+    //    use CanGenerateInvoice;
 
     /**
-     * Define Gateway name
+     * Define Gateway name.
      */
     const GATEWAY = 'gtpay';
-
 
     /**
      * @param $key
@@ -32,7 +30,7 @@ class GTPay extends Helpers implements PaymentGateway
 
     /**
      * @param string $productId
-     * @param array $transactionData
+     * @param array  $transactionData
      * @param string $class
      * @param string $buttonTitle
      * @param string $gateway
@@ -40,6 +38,7 @@ class GTPay extends Helpers implements PaymentGateway
      * Render Pay Button For Particular Product
      *
      * @throws \LaraPayNG\Exceptions\UnknownPaymentGatewayException
+     *
      * @return string
      */
     public function payButton($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Via GTPay', $gateway = self::GATEWAY)
@@ -47,17 +46,15 @@ class GTPay extends Helpers implements PaymentGateway
         return $this->generateSubmitButton($productId, $transactionData, $class, $buttonTitle, $gateway);
     }
 
-
     public function button($productId, $transactionData = [], $class = '', $buttonTitle = 'Pay Via GTPay')
     {
         return $this->payButton($productId, $transactionData, $class, $buttonTitle, self::GATEWAY);
     }
 
     /**
-     * Log Transaction
+     * Log Transaction.
      *
      * @param $transactionData
-     *
      * @param null $payer
      *
      * @return string
@@ -93,11 +90,9 @@ class GTPay extends Helpers implements PaymentGateway
         $this->dataRepository->updateTransactionDataFrom($table, ['gtpay_tranx_id'  => $transactionId], $id);
 
         return $transactionId;
-
     }
 
     /**
-     *
      * @param $transactionData
      * @param $transactionId
      *
@@ -113,12 +108,11 @@ class GTPay extends Helpers implements PaymentGateway
 
         $hash = trim($this->generateVerificationHash($transactionData['gtpay_tranx_id'], $gateway = 'gtpay'));
 
-
         $queryString = [
             'mertid'    => $mertId,
             'amount'    => $transactionData['gtpay_tranx_amt'],
             'tranxid'   => $transactionData['gtpay_tranx_id'],
-            'hash'      => $hash
+            'hash'      => $hash,
 //                'tranxid' => 'PLM_1394115494_11180',
 //                'mertid' => 212,
 //                'amount' => 200000,
@@ -129,7 +123,7 @@ class GTPay extends Helpers implements PaymentGateway
 
         $request = $client->get('https://ibank.gtbank.com/GTPayService/gettransactionstatus.json', [
             'query'     => $queryString,
-            'headers'   =>  ['Accept' => 'application/json', 'Hash' => $hash ]
+            'headers'   => ['Accept' => 'application/json', 'Hash' => $hash],
         ]);
 
         $response = $request->getBody();
@@ -138,12 +132,11 @@ class GTPay extends Helpers implements PaymentGateway
 
         $result = $this->logResponse($transaction + $transactionData);
 
-
         return $this->collateResponse($result);
     }
 
     /**
-     * Log Transaction Response
+     * Log Transaction Response.
      *
      * @param $transactionData
      *
@@ -155,21 +148,19 @@ class GTPay extends Helpers implements PaymentGateway
         You should query your database with the merchant reference and fetch the records you saved for this transaction.
         Then you should compare the $transaction['total'] with the total from your database.*/
 
-
         // Save Response to DB (Keep Transaction Detail)
         // Determine If the Transaction Failed Or Succeeded & Redirect As Appropriate
         // If Success, Notify User Via Email Of their Order
         // Notify Admin Of New Order
 
-
         $valueToUpdate = [
-            "r_gtpay_tranx_id"          => $transactionData["gtpay_tranx_id"],
-            "r_gtpay_amount"            => $this->toFloat($transactionData["Amount"]),
-            "gtpay_merchant_ref"        => empty($transactionData["MerchantReference"]) ? null : $transactionData["MerchantReference"],
-            "gtpay_response_code"       => $transactionData["ResponseCode"],
-            "gtpay_response_description"=> $transactionData["ResponseDescription"],
-            "gtpay_tranx_status_code"   => $transactionData["gtpay_tranx_status_code"],
-            "gtpay_tranx_status_msg"    => $transactionData["gtpay_tranx_status_msg"],
+            'r_gtpay_tranx_id'           => $transactionData['gtpay_tranx_id'],
+            'r_gtpay_amount'             => $this->toFloat($transactionData['Amount']),
+            'gtpay_merchant_ref'         => empty($transactionData['MerchantReference']) ? null : $transactionData['MerchantReference'],
+            'gtpay_response_code'        => $transactionData['ResponseCode'],
+            'gtpay_response_description' => $transactionData['ResponseDescription'],
+            'gtpay_tranx_status_code'    => $transactionData['gtpay_tranx_status_code'],
+            'gtpay_tranx_status_msg'     => $transactionData['gtpay_tranx_status_msg'],
         ];
 
         $table = $this->config('table');
@@ -187,7 +178,7 @@ class GTPay extends Helpers implements PaymentGateway
      */
     public function serializeItemsToJson($transactionData)
     {
-        $items = [ ];
+        $items = [];
 
         foreach ($transactionData as $key => $value) {
             if (strpos($key, 'item_') === 0) {
@@ -203,16 +194,15 @@ class GTPay extends Helpers implements PaymentGateway
             }
         }
 
-
         if (empty($items)) {
             $items = json_encode([
                 1 => [
-                    'item' => $transactionData['gtpay_tranx_memo'],
-                    'price' => $transactionData['gtpay_tranx_amt'],
+                    'item'        => $transactionData['gtpay_tranx_memo'],
+                    'price'       => $transactionData['gtpay_tranx_amt'],
                     'description' => isset($transactionData['gtpay_echo_data'])
                         ? $transactionData['gtpay_echo_data']
-                        : 'N/A'
-                ]
+                        : 'N/A',
+                ],
             ]);
 
             return $items;
@@ -223,11 +213,8 @@ class GTPay extends Helpers implements PaymentGateway
         return $items;
     }
 
-
-
     /**
-     *
-     * Get All Transactions
+     * Get All Transactions.
      *
      * @return mixed
      */
@@ -237,8 +224,7 @@ class GTPay extends Helpers implements PaymentGateway
     }
 
     /**
-     *
-     * Get All Failed Transactions
+     * Get All Failed Transactions.
      *
      * @return mixed
      */
@@ -248,8 +234,7 @@ class GTPay extends Helpers implements PaymentGateway
     }
 
     /**
-     *
-     * Get All Successful Transactions
+     * Get All Successful Transactions.
      *
      * @return mixed
      */
@@ -261,5 +246,4 @@ class GTPay extends Helpers implements PaymentGateway
     private function confirmTransactionHasNotBeenCompromised()
     {
     }
-
 }

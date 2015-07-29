@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 
 class CreateSimplepayTransactionsTable extends Migration
 {
@@ -47,7 +47,6 @@ class CreateSimplepayTransactionsTable extends Migration
             $table->engine = 'InnoDB';
         });
     }
-
 
     /**
      * Reverse the migrations.

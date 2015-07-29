@@ -1,6 +1,5 @@
 <?php
 
-
 namespace LaraPayNG\Repositories;
 
 use Illuminate\Support\Traits\Macroable;
@@ -22,7 +21,6 @@ class GatewayRepository
      * Create a new provider repository instance.
      *
      * @param PaymentGateway $provider
-     *
      */
     public function __construct(PaymentGateway $provider)
     {
@@ -32,8 +30,9 @@ class GatewayRepository
     /**
      * Handle dynamic calls into macros or pass missing methods to the store.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param string $method
+     * @param array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)

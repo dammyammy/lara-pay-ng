@@ -1,19 +1,18 @@
 <?php
 
-
 namespace LaraPayNG\Traits;
 
-use SplFileInfo;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\View;
 use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\View;
+use SplFileInfo;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Process;
 
 trait CanGenerateInvoice
 {
     /**
-     * Generate invoice return for Transaction
+     * Generate invoice return for Transaction.
      *
      * @param $transactionData
      *
@@ -48,14 +47,15 @@ trait CanGenerateInvoice
     /**
      * Create a new invoice instance.
      *
-     * @param  \Laravel\Cashier\Contracts\Billable  $billable
+     * @param \Laravel\Cashier\Contracts\Billable $billable
      * @param  object
+     *
      * @return void
      */
     public function __construct(BillableContract $billable, $invoice)
     {
         $this->billable = $billable;
-        $this->files = new Filesystem;
+        $this->files = new Filesystem();
         $this->stripeInvoice = $invoice;
     }
 
@@ -70,9 +70,10 @@ trait CanGenerateInvoice
     }
 
     /**
-     * Get the total amount for the line item in the currency symbol of your choice
+     * Get the total amount for the line item in the currency symbol of your choice.
      *
-     * @param  string $symbol The Symbol you want to show
+     * @param string $symbol The Symbol you want to show
+     *
      * @return string
      */
     public function totalWithCurrency()
@@ -127,7 +128,8 @@ trait CanGenerateInvoice
     /**
      * Get all of the line items by a given type.
      *
-     * @param  string  $type
+     * @param string $type
+     *
      * @return array
      */
     public function lineItemsByType($type)
@@ -152,7 +154,7 @@ trait CanGenerateInvoice
      */
     public function hasDiscount()
     {
-        return $this->subtotal > 0 && $this->subtotal != $this->total && ! is_null($this->stripeInvoice->discount);
+        return $this->subtotal > 0 && $this->subtotal != $this->total && !is_null($this->stripeInvoice->discount);
     }
 
     /**
@@ -206,7 +208,7 @@ trait CanGenerateInvoice
      */
     public function discountIsPercentage()
     {
-        return ! is_null($this->percentOff());
+        return !is_null($this->percentOff());
     }
 
     /**
@@ -234,7 +236,8 @@ trait CanGenerateInvoice
     /**
      * Get a Carbon date for the invoice.
      *
-     * @param  \DateTimeZone|string  $timezone
+     * @param \DateTimeZone|string $timezone
+     *
      * @return \Carbon\Carbon
      */
     public function date($timezone = null)
@@ -247,7 +250,8 @@ trait CanGenerateInvoice
     /**
      * Get a human readable date for the invoice.
      *
-     * @param  \DateTimeZone|string  $timezone
+     * @param \DateTimeZone|string $timezone
+     *
      * @return string
      */
     public function dateString($timezone = null)
@@ -258,8 +262,9 @@ trait CanGenerateInvoice
     /**
      * Get an SplFileInfo instance for the invoice with the given data.
      *
-     * @param  array  $data
-     * @param  string|null  $storagePath
+     * @param array       $data
+     * @param string|null $storagePath
+     *
      * @return \SplFileInfo
      */
     public function file(array $data, $storagePath = null)
@@ -270,7 +275,8 @@ trait CanGenerateInvoice
     /**
      * Get the View instance for the invoice.
      *
-     * @param  array  $data
+     * @param array $data
+     *
      * @return \Illuminate\View\View
      */
     public function view(array $data)
@@ -283,7 +289,8 @@ trait CanGenerateInvoice
     /**
      * Get the rendered HTML content of the invoice view.
      *
-     * @param  array  $data
+     * @param array $data
+     *
      * @return string
      */
     public function render(array $data)
@@ -294,8 +301,9 @@ trait CanGenerateInvoice
     /**
      * Create an invoice download response.
      *
-     * @param  array   $data
-     * @param  string  $storagePath
+     * @param array  $data
+     * @param string $storagePath
+     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function download(array $data, $storagePath = null)
@@ -305,10 +313,10 @@ trait CanGenerateInvoice
         $document = $this->writeInvoice($data, $storagePath);
 
         $response = new Response($this->files->get($document), 200, [
-            'Content-Description' => 'File Transfer',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Description'       => 'File Transfer',
+            'Content-Disposition'       => 'attachment; filename="'.$filename.'"',
             'Content-Transfer-Encoding' => 'binary',
-            'Content-Type' => 'application/pdf',
+            'Content-Type'              => 'application/pdf',
         ]);
 
         $this->files->delete($document);
@@ -319,8 +327,9 @@ trait CanGenerateInvoice
     /**
      * Write the raw PDF bytes for the invoice via PhantomJS.
      *
-     * @param  array  $data
-     * @param  string  $storagePath
+     * @param array  $data
+     * @param string $storagePath
+     *
      * @return string
      */
     protected function writeInvoice(array $data, $storagePath)
@@ -339,8 +348,9 @@ trait CanGenerateInvoice
     /**
      * Write the view HTML so PhantomJS can access it.
      *
-     * @param  array  $data
-     * @param  string  $storagePath
+     * @param array  $data
+     * @param string $storagePath
+     *
      * @return string
      */
     protected function writeViewForImaging(array $data, $storagePath)
@@ -355,7 +365,8 @@ trait CanGenerateInvoice
     /**
      * Get the PhantomJS process instance.
      *
-     * @param  string  $viewPath
+     * @param string $viewPath
+     *
      * @return \Symfony\Component\Process\Process
      */
     public function getPhantomProcess($viewPath)
@@ -370,12 +381,13 @@ trait CanGenerateInvoice
     /**
      * Get the filename for the invoice download.
      *
-     * @param  string  $prefix
+     * @param string $prefix
+     *
      * @return string
      */
     protected function getDownloadFilename($prefix)
     {
-        $prefix = ! is_null($prefix) ? $prefix.'_' : '';
+        $prefix = !is_null($prefix) ? $prefix.'_' : '';
 
         return $prefix.$this->date()->month.'_'.$this->date()->year.'.pdf';
     }
@@ -384,6 +396,7 @@ trait CanGenerateInvoice
      * Set the filesystem instance.
      *
      * @param  \Illuminate\Filesystem\Filesystem
+     *
      * @return \Laravel\Cashier\Invoice
      */
     public function setFiles(Filesystem $files)
@@ -419,14 +432,15 @@ trait CanGenerateInvoice
         } elseif (str_contains($uname, 'linux')) {
             return PHP_INT_SIZE === 4 ? 'linux-i686' : 'linux-x86_64';
         } else {
-            throw new \RuntimeException("Unknown operating system.");
+            throw new \RuntimeException('Unknown operating system.');
         }
     }
 
     /**
      * Get the binary extension for the system.
      *
-     * @param  string  $system
+     * @param string $system
+     *
      * @return string
      */
     protected function getExtension($system)
@@ -437,7 +451,8 @@ trait CanGenerateInvoice
     /**
      * Dynamically get values from the Stripe invoice.
      *
-     * @param  string  $key
+     * @param string $key
+     *
      * @return mixed
      */
     public function __get($key)
@@ -448,8 +463,9 @@ trait CanGenerateInvoice
     /**
      * Dynamically set values on the Stripe invoice.
      *
-     * @param  string  $key
-     * @param  mixed   $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function __set($key, $value)

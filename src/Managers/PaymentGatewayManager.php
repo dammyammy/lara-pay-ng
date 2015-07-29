@@ -2,11 +2,11 @@
 
 namespace LaraPayNG\Managers;
 
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Support\Manager;
 use LaraPayNG\CashEnvoy;
 use LaraPayNG\DataRepositories\DataRepository;
 use LaraPayNG\Exceptions\UnknownPaymentGatewayException;
-use Illuminate\Contracts\Config\Repository as Config;
-use Illuminate\Support\Manager;
 use LaraPayNG\GTPay;
 use LaraPayNG\Repositories\GatewayRepository;
 use LaraPayNG\SimplePay;
@@ -25,7 +25,7 @@ class PaymentGatewayManager extends Manager
     protected $dataRepository;
 
     /**
-     * @param Config $config
+     * @param Config         $config
      * @param DataRepository $dataRepository
      */
     public function __construct(DataRepository $dataRepository, Config $config)
@@ -85,7 +85,7 @@ class PaymentGatewayManager extends Manager
     /**
      * Create a new driver repository with the given implementation.
      *
-     * @param  PaymentGateway $provider
+     * @param PaymentGateway $provider
      *
      * @return \LaraPayNG\GatewayRepository
      */
@@ -98,6 +98,7 @@ class PaymentGatewayManager extends Manager
      * Get the default provider driver name.
      *
      * @throws UnknownPaymentGatewayException
+     *
      * @return string
      */
     public function getDefaultDriver()
@@ -108,45 +109,46 @@ class PaymentGatewayManager extends Manager
             return $driver;
         }
 
-        throw new UnknownPaymentGatewayException;
+        throw new UnknownPaymentGatewayException();
     }
 
     /**
      * Set the default payment driver name.
      *
-     * @param  string $name
+     * @param string $name
+     *
+     * @throws UnknownPaymentGatewayException
      *
      * @return CashEnvoy|SimplePay|VoguePay
-     * @throws UnknownPaymentGatewayException
      */
     public function with($name)
     {
-//        return $this->config->set('lara-pay-ng.gateways.driver', $name);
+        //        return $this->config->set('lara-pay-ng.gateways.driver', $name);
         $name = strtolower($name);
 
-        switch($name) {
-            case "gtpay":
+        switch ($name) {
+            case 'gtpay':
                 return $this->createGtPayDriver();
                 break;
 
-            case "webpay":
+            case 'webpay':
                 return $this->createWebPayDriver();
                 break;
 
-            case "simplepay":
+            case 'simplepay':
                 return $this->createSimplePayDriver();
                 break;
 
-            case "cashenvoy":
+            case 'cashenvoy':
                 return $this->createCashEnvoyDriver();
                 break;
 
-            case "voguepay":
+            case 'voguepay':
                 return $this->createVoguePayDriver();
                 break;
 
             default:
-                throw new UnknownPaymentGatewayException;
+                throw new UnknownPaymentGatewayException();
                 break;
 
         }
